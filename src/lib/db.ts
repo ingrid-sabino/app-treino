@@ -48,6 +48,7 @@ export interface Rotation extends Syncable {
   starts_on: string
   is_active: boolean
   archived_at: string | null
+  weekly_slots: number[] // Dias de treino: treinos por dia, de segunda [0] a domingo [6] (FR-34)
 }
 
 export interface RotationItem extends Syncable {
@@ -84,6 +85,7 @@ export interface WorkoutSet extends Syncable {
 export interface CardioDetail {
   session_id: string
   updated_at: string
+  deleted_at?: string | null
   distance_km: number | null
   moving_seconds: number | null
   source: 'manual' | 'strava'
@@ -102,6 +104,18 @@ export interface BodyLog extends Syncable {
   notes: string | null
 }
 
+// Ocorrência da Rotação: a seq-ésima vez na fila (item = seq mod nº de itens).
+// Só existe linha quando a ocorrência foi feita, pulada ou movida (FR-2, FR-35).
+export interface RotationOccurrence extends Syncable {
+  owner_id: string
+  rotation_id: string
+  seq: number
+  planned_on: string | null // AAAA-MM-DD para onde foi movida
+  resolution: 'done' | 'skipped' | null
+  resolved_on: string | null
+  session_id: string | null
+}
+
 // Fila de envio: cada escrita local entra aqui até o Supabase confirmar
 export interface OutboxEntry {
   seq?: number
@@ -116,6 +130,7 @@ export type SyncedTable =
   | 'template_exercises'
   | 'rotations'
   | 'rotation_items'
+  | 'rotation_occurrences'
   | 'sessions'
   | 'sets'
   | 'cardio_details'
@@ -127,6 +142,7 @@ export class TonusDB extends Dexie {
   template_exercises!: EntityTable<TemplateExercise, 'id'>
   rotations!: EntityTable<Rotation, 'id'>
   rotation_items!: EntityTable<RotationItem, 'id'>
+  rotation_occurrences!: EntityTable<RotationOccurrence, 'id'>
   sessions!: EntityTable<Session, 'id'>
   sets!: EntityTable<WorkoutSet, 'id'>
   cardio_details!: EntityTable<CardioDetail, 'session_id'>
@@ -148,6 +164,10 @@ export class TonusDB extends Dexie {
       body_logs: 'id, owner_id, logged_on',
       outbox: '++seq, table, row_id',
     })
+    // 0002: Ocorrências da Rotação (pular e mudar o dia de um treino)
+    this.version(2).stores({
+      rotation_occurrences: 'id, rotation_id, [rotation_id+seq]',
+    })
   }
 }
 
@@ -159,6 +179,7 @@ interface RowByTable {
   template_exercises: TemplateExercise
   rotations: Rotation
   rotation_items: RotationItem
+  rotation_occurrences: RotationOccurrence
   sessions: Session
   sets: WorkoutSet
   cardio_details: CardioDetail

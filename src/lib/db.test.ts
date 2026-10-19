@@ -17,6 +17,7 @@ describe('Dexie local', () => {
       'exercises',
       'outbox',
       'rotation_items',
+      'rotation_occurrences',
       'rotations',
       'sessions',
       'sets',
