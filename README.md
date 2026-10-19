@@ -1,8 +1,19 @@
-# app-treino
+# app-treino · Tônus
 
 App pessoal de acompanhamento de treino: musculação, corrida, yoga e outras modalidades num só calendário, com a Rotação que sempre sabe qual é o próximo treino, Programas gerados por IA importados em um toque, evolução de força e corpo e, depois, plano alimentar e comunidade.
 
 PWA instalável no iPhone, custo zero (React + Vite + Supabase + Vercel).
+
+## Rodar
+
+```bash
+npm install
+npm run dev    # servidor local
+npm run build  # build de produção (PWA em dist/)
+npm test       # testes (Vitest)
+```
+
+Variáveis: copie `.env.example` para `.env.local` com a URL e a anon key do Supabase.
 
 ## Documentação
 
