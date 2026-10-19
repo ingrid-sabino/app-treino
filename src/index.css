@@ -1,5 +1,41 @@
 @import 'tailwindcss';
+@import '@fontsource-variable/inter';
+@import '@fontsource/barlow-condensed/500.css';
+@import '@fontsource/barlow-condensed/700.css';
 
-body {
-  background: #f7f5f0;
+/* Identidade visual do Tônus: off-white calmo, acentos lima e lilás,
+   cantos bem arredondados. Barlow Condensed nos títulos e números; Inter no resto. */
+@theme {
+  --font-sans: 'Inter Variable', system-ui, sans-serif;
+  --font-display: 'Barlow Condensed', 'Inter Variable', sans-serif;
+
+  --color-paper: #f7f5f0; /* fundo */
+  --color-card: #ffffff;
+  --color-line: #e7e3da;
+  --color-ink: #1e1b2e; /* texto principal */
+  --color-muted: #6b6879; /* texto secundário */
+  --color-lime: #d4f26a; /* ação principal (texto em ink) */
+  --color-lime-soft: #eef9c8;
+  --color-lilac: #b9a7f5; /* destaques e recordes */
+  --color-lilac-soft: #ece6fd;
+  --color-lilac-ink: #5b43c9; /* lilás legível sobre fundo claro */
+  --color-danger: #c2410c;
+
+  --radius-card: 1.5rem;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-paper font-sans text-ink antialiased;
+    overscroll-behavior-y: none;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-display font-bold tracking-tight;
+  }
 }
