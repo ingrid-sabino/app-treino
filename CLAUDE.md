@@ -27,6 +27,16 @@ PWA de acompanhamento de treino (musculação + cardio + yoga), inspirado no Hev
 - Row Level Security em toda tabela nova. Dados de hormonização, Exames, medidas e Fotos de progresso nunca ficam acessíveis fora do próprio dono (PRD §8, FR-33).
 - Sem contador de macros nem diário de alimentos (FR-28).
 
+## Fluxo de trabalho 100% na nuvem
+
+O projeto não roda no computador do Ingrid. Tudo vive no GitHub, Vercel e Supabase.
+
+- Trabalho feito pelo Claude Code na web (claude.ai/code) com este repositório. Ao fim de cada tarefa: commit em português e push para o GitHub. Nada fica só na máquina da sessão.
+- Não pedir para rodar comandos localmente nem para abrir `localhost`. Quem testa é o preview da Vercel: cada push gera um link que o Ingrid abre no iPhone. Antes do push, rode `npm run build` (e os testes) na sessão.
+- Segredos (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) ficam nas Environment Variables da Vercel e nas variáveis de ambiente do Claude Code web. Nunca commitar `.env*`; manter um `.env.example` só com os nomes.
+- Banco: migrations versionadas em `supabase/migrations/`; o Ingrid aplica cada nova pelo SQL Editor do Supabase. Ao criar uma migration, diga qual arquivo rodar.
+- Branches: trabalhar na `main` com commits pequenos, a menos que o Ingrid peça uma branch ou PR.
+
 ## Método: BMAD
 
 O projeto segue o BMAD Method (v7, skills). Fluxo: `bmad-prd` (PRD já existe; use modo Update/Validate) → `bmad-ux` → `bmad-architecture` → `bmad-build` por história → `bmad-retrospective` no Dia 7. Veja `docs/kickoff-claude-code.md` para instalar.
