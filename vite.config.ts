@@ -11,8 +11,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.png', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Tônus',
-        short_name: 'Tônus',
+        name: 'Tönus',
+        short_name: 'Tönus',
         description: 'Treino, Rotação e evolução num só lugar.',
         lang: 'pt-BR',
         start_url: '/',

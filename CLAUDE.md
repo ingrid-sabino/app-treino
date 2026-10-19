@@ -43,4 +43,4 @@ O projeto segue o BMAD Method (v7, skills). Fluxo: `bmad-prd` (PRD já existe; u
 
 ## Roteiro do MVP
 
-Dia 1 (19/10) feito em parte: PRD, este arquivo e o schema SQL. Pendente do Dia 1: instalar o BMAD e criar o projeto no Supabase. Depois, Dias 2 a 7 conforme o §6.3 do PRD. Marque o checklist do PRD conforme avançar.
+Dia 1 (19/10) feito em parte: PRD, este arquivo e o schema SQL. Pendente do Dia 1: instalar o BMAD (o projeto Supabase `app-treino` já existe, com as migrations 0001 e 0002 aplicadas). Depois, Dias 2 a 7 conforme o §6.3 do PRD. Marque o checklist do PRD conforme avançar.
