@@ -30,6 +30,7 @@ export default defineConfig({
       workbox: {
         // App inteiro em cache: abre sem internet na academia (FR-8)
         globPatterns: ['**/*.{js,css,html,png,svg,woff2}'],
+        globIgnores: ['**/*-{cyrillic,cyrillic-ext,greek,greek-ext,vietnamese}-*.woff2'],
         navigateFallback: '/index.html',
       },
     }),
