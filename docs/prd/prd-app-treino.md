@@ -68,7 +68,9 @@ Público futuro: pessoas que misturam musculação com outras modalidades e quer
 | Série | Registro de um Exercício dentro de uma Sessão: peso (kg), reps, RPE opcional e status feita/pulada. |
 | Template | Treino planejado (ex.: "Treino A"): lista ordenada de Exercícios com séries e reps-alvo. |
 | Rotação | Sequência ordenada de Templates (ex.: A → B → C → D) que define o Próximo treino. Pode incluir dias de cardio. |
-| Próximo treino | O Template seguinte na Rotação, calculado a partir da última Sessão registrada. |
+| Próximo treino | O primeiro treino da Rotação ainda não feito nem pulado, pela ordem da Agenda. |
+| Dias de treino | Dias da semana em que a pessoa treina e quantos treinos cabem em cada um (ex.: sábado com 2). |
+| Agenda | Distribuição dos próximos treinos da Rotação, em ordem, nos Dias de treino. Mostra o que está planejado na semana. |
 | Programa | Pacote importado de uma IA: Rotação + Templates + metadados (objetivo, nível, semanas). |
 | Prompt-modelo | Texto pronto do app que a pessoa cola numa IA para gerar um Programa ou Plano alimentar no formato importável. |
 | Plano alimentar | Cardápio por dia/refeição com Receitas e calorias por refeição, importado da nutricionista ou de uma IA. Sem macros. |
@@ -89,10 +91,12 @@ Sete features. As marcadas **MVP** entram nos 7 dias; as marcadas **v1.1** vêm 
 
 Resolve a maior dor com o Hevy: lembrar qual foi o último treino. Realiza UJ-1.
 
-- **FR-1.** O app calcula o Próximo treino a partir da última Sessão concluída da Rotação ativa. *Teste:* registrar o Treino A faz a tela Hoje mostrar o Treino B.
-- **FR-2.** A pessoa pode pular ou trocar o Próximo treino por qualquer Template, e a Rotação continua a partir do que foi feito.
+- **FR-1.** O app calcula o Próximo treino como o primeiro treino da Rotação ativa ainda não feito nem pulado. Um Dia de treino que passa sem Sessão não pula nada: o treino segue esperando. *Teste:* registrar o Treino A faz a tela Hoje mostrar o Treino B.
+- **FR-2.** A pessoa pode pular qualquer treino planejado: ele sai da fila e o sucessor ocupa o lugar dele, como se nada tivesse sido pulado. Também pode trocar o treino do dia por qualquer Template; um Template fora da Rotação não mexe na fila. *Teste:* com A na segunda e B na terça, pular o A põe o B na segunda.
 - **FR-3.** A tela Hoje mostra também a semana (seg–dom) com as Sessões feitas e as planejadas, de todas as Modalidades.
 - **FR-4.** Não há limite de Templates nem de Rotações.
+- **FR-34.** A pessoa escolhe os Dias de treino da Rotação e quantos treinos fazer em cada dia. A Agenda distribui os treinos na ordem da Rotação nesses dias. *Teste:* Rotação A–F com seg, ter, qui e sex mostra A, B, C e D nesses dias.
+- **FR-35.** A pessoa pode mudar o dia de um ou mais treinos da Agenda. Só o treino movido muda: o dia de origem fica livre e os outros continuam onde estavam; nada se repete na semana seguinte. *Teste:* mover o C de quinta para sábado deixa seg A, ter B, sex D, sáb C, e a semana seguinte começa no E.
 
 ### 4.2 Registro de musculação — MVP
 
@@ -102,7 +106,7 @@ Mantém o que funciona no Hevy. Realiza UJ-2.
 - **FR-6.** Marcar uma Série como feita inicia um timer de descanso configurável por Exercício.
 - **FR-7.** A pessoa pode adicionar, remover e reordenar Exercícios e Séries durante a Sessão sem alterar o Template.
 - **FR-8.** A Sessão em andamento sobrevive a fechar o app, ficar sem internet ou bloquear a tela (salvamento local contínuo).
-- **FR-9.** Ao concluir, o app destaca recordes pessoais (maior peso e maior 1RM estimado por Exercício).
+- **FR-9.** Ao concluir, o app destaca recordes pessoais (maior peso e maior 1RM estimado por Exercício). O 1RM estimado usa a fórmula de Epley: peso × (1 + reps ÷ 30).
 - **FR-25.** Durante a Sessão, um cronômetro mostra a Duração desde o início, visível no topo da tela e mantido mesmo com o app em segundo plano (calculado pelo horário de início, não por timer rodando). *Teste:* bloquear a tela por 10 min e voltar mostra a Duração correta.
 - **FR-26.** Durante e ao fim da Sessão, o app mostra o Volume: peso total acumulado (soma de peso × reps das Séries feitas, em kg) e total de repetições. Séries puladas não contam. *Teste:* 3 Séries de 10 × 50 kg = 1.500 kg e 30 reps.
 - **FR-27.** O resumo da Sessão concluída mostra Duração, Volume, total de reps, número de Séries e recordes; a tela Evolução mostra o Volume por semana e por grupo muscular.
@@ -170,7 +174,7 @@ O MVP fica pronto quando o Ingrid conseguir passar uma semana real de treino só
 
 ### 6.1 Dentro do MVP
 
-FR-1 a FR-16, FR-21, FR-22 e FR-25 a FR-27, com login por e-mail (código de 6 dígitos, com magic link como alternativa no navegador), PWA instalável no iPhone e funcionamento offline durante o treino.
+FR-1 a FR-16, FR-21, FR-22, FR-25 a FR-27, FR-34 e FR-35, com login por e-mail (código de 6 dígitos, com magic link como alternativa no navegador), PWA instalável no iPhone e funcionamento offline durante o treino.
 
 ### 6.2 Fora do MVP
 
@@ -180,7 +184,7 @@ Strava (FR-17), Plano alimentar e Lista de mercado (FR-18 a FR-20), Marcos hormo
 
 - [ ] **Dia 1 (19/10).** Repositório no GitHub, BMAD instalado, este PRD em `docs/`, projeto Supabase criado e schema do banco (§7).
 - [x] **Dia 2 (20/10).** Esqueleto do PWA (React + Vite), login, navegação Hoje / Treinar / Evolução / Perfil, deploy na Vercel e instalação no iPhone. *Código pronto (build e testes passando); falta o Ingrid ligar o projeto na Vercel com as variáveis do Supabase e instalar no iPhone.*
-- [ ] **Dia 3 (21/10).** Catálogo de Exercícios, Templates e Rotação manual. Tela Hoje com Próximo treino (FR-1 a FR-4).
+- [ ] **Dia 3 (21/10).** Catálogo de Exercícios, Templates e Rotação manual. Tela Hoje com Próximo treino e Agenda da semana (FR-1 a FR-4, FR-34, FR-35).
 - [ ] **Dia 4 (22/10).** Registro de musculação com Séries, timer, Duração, Volume e salvamento offline (FR-5 a FR-9, FR-25 a FR-27). Usar no treino do dia.
 - [ ] **Dia 5 (23/10).** Formato de Programa (JSON), Prompts-modelo, importação com prévia e mapeamento de Exercícios (FR-10 a FR-14).
 - [ ] **Dia 6 (24/10).** Cardio e yoga manuais no calendário (FR-15, FR-16). Registro corporal e tela Evolução (FR-21, FR-22).
@@ -222,7 +226,7 @@ A Sessão é salva no iPhone a cada Série; o Supabase recebe a cópia quando h�
 | Integrações (v1.1) | Strava API via Supabase Edge Function | O Amazfit sincroniza com o Strava pelo app Zepp; o app lê do Strava. |
 | Método de trabalho | BMAD Method v7 (skills) no Claude Code ou Codex | PRD, UX, arquitetura e histórias versionados no repositório. |
 
-**Modelo de dados inicial:** `profiles`, `exercises`, `templates`, `template_exercises`, `rotations`, `rotation_items`, `sessions`, `sets`, `cardio_details`, `body_logs`, `progress_photos`; na v1.1, `hormone_milestones`, `lab_exams`, `meal_plans`, `recipes`, `shopping_items`.
+**Modelo de dados inicial:** `profiles`, `exercises`, `templates`, `template_exercises`, `rotations`, `rotation_items`, `rotation_occurrences`, `sessions`, `sets`, `cardio_details`, `body_logs`, `progress_photos`; na v1.1, `hormone_milestones`, `lab_exams`, `meal_plans`, `recipes`, `shopping_items`.
 
 Na v2 (Comunidade): `public_profiles`, `posts`, `follows`, `likes`, `comments`, `reports`, todas com RLS que impede qualquer leitura de tabelas de saúde a partir delas.
 
@@ -263,10 +267,10 @@ O app guarda dados de saúde, fotos do corpo e informações de hormonização, 
 ### Bloqueios do MVP (validação do PRD, 19/10)
 
 - [x] **Login no PWA instalado.** No iOS, o magic link abre no Safari, que não compartilha a sessão com o app da Tela de Início. **Decidido:** login por código de 6 dígitos enviado por e-mail; o link continua valendo no navegador.
-- [ ] **Pular o Próximo treino (FR-2).** Pular não gera Sessão concluída, então a Rotação não avança pelo FR-1. Proposta: o pulo grava uma Sessão com status pulada; trocar por um Template fora da Rotação não move a Rotação. Decidir antes do Dia 3.
-- [ ] **Sessões planejadas da semana (FR-3, métrica de ≥ 90%).** A Rotação é uma sequência sem dias da semana. Proposta: dias de treino definidos no Perfil e os próximos itens da Rotação projetados nesses dias. Decidir antes do Dia 3.
-- [ ] **Base de sincronização (FR-7, FR-8).** Só `sessions` tem `updated_at` e nenhuma tabela tem remoção lógica; apagar uma Série offline não chegaria ao Supabase. Proposta: migration `0002` com `updated_at` e `deleted_at` nas tabelas sincronizadas. Antes do Dia 4.
-- [ ] **1RM estimado (FR-9, FR-22).** Fórmula não definida. Proposta: Epley (peso × (1 + reps/30)).
+- [x] **Pular o Próximo treino (FR-2).** **Decidido:** o treino pulado sai da fila e o sucessor ocupa o lugar dele. Fica registrado em `rotation_occurrences` (não vira Sessão, então não entra em Volume nem nas métricas).
+- [x] **Sessões planejadas da semana (FR-3, métrica de ≥ 90%).** **Decidido:** Dias de treino com quantidade por dia (FR-34) e mudança livre de dia (FR-35).
+- [x] **Base de sincronização (FR-7, FR-8).** **Feito:** migration `0002` com `updated_at` e `deleted_at` em todas as tabelas sincronizadas.
+- [x] **1RM estimado (FR-9, FR-22).** **Decidido:** Epley.
 
 ### Índice de premissas
 

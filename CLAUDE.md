@@ -23,7 +23,7 @@ PWA de acompanhamento de treino (musculação + cardio + yoga), inspirado no Hev
 
 - Duração da Sessão é calculada pelo horário de início salvo, nunca por um timer em memória (FR-25).
 - Volume = soma de peso × reps das Séries feitas; Séries puladas não contam (FR-26).
-- Próximo treino vem da última Sessão concluída da Rotação ativa (FR-1).
+- Próximo treino é o primeiro treino da Rotação ativa ainda não feito nem pulado; pular põe o sucessor no lugar; mudar o dia move só aquele treino (FR-1, FR-2, FR-35). A regra vive em `src/lib/schedule.ts` e tem testes.
 - Row Level Security em toda tabela nova. Dados de hormonização, Exames, medidas e Fotos de progresso nunca ficam acessíveis fora do próprio dono (PRD §8, FR-33).
 - Sem contador de macros nem diário de alimentos (FR-28).
 
