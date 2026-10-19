@@ -39,6 +39,15 @@ Durante o setup, aponte a pasta de saída dos documentos para `docs/` e crie uma
 1. Crie um projeto novo (região São Paulo, `sa-east-1`).
 2. Abra **SQL Editor** e rode o conteúdo de `supabase/migrations/0001_init.sql`.
 3. Em **Authentication → Providers**, deixe só e-mail (magic link) ligado.
+   Em **Authentication → Emails → Magic Link**, troque o corpo do e-mail para incluir o código, que é o que loga o app instalado no iPhone:
+
+   ```html
+   <h2>Seu código do Tônus</h2>
+   <p style="font-size:32px;letter-spacing:6px"><strong>{{ .Token }}</strong></p>
+   <p>Ou, no navegador, <a href="{{ .ConfirmationURL }}">entre por este link</a>.</p>
+   ```
+
+   Em **Authentication → URL Configuration**, coloque a URL da Vercel em *Site URL* e em *Redirect URLs* (inclua `https://*.vercel.app/**` para os previews).
 4. Copie a URL do projeto e a `anon key` para um `.env.local` (nunca commitar):
 
 ```bash
@@ -63,4 +72,4 @@ Antes de criar telas, me pergunte sobre identidade visual (pergunta em aberto no
 
 ## 6. Deploy
 
-Na Vercel: **Add New → Project → importar `app-treino`**, framework Vite, e adicionar as mesmas duas variáveis de ambiente. A cada push na `main`, o app atualiza. No iPhone: abrir a URL no Safari → Compartilhar → **Adicionar à Tela de Início**.
+Na Vercel: **Add New → Project → importar `app-treino`**, framework Vite, e adicionar as mesmas duas variáveis de ambiente (em Production e Preview). A cada push na `main`, o app atualiza. No iPhone: abrir a URL no Safari → Compartilhar → **Adicionar à Tela de Início**.

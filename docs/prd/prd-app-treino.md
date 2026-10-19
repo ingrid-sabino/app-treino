@@ -170,16 +170,16 @@ O MVP fica pronto quando o Ingrid conseguir passar uma semana real de treino só
 
 ### 6.1 Dentro do MVP
 
-FR-1 a FR-16, FR-21, FR-22 e FR-25 a FR-27, com login (e-mail/magic link), PWA instalável no iPhone e funcionamento offline durante o treino.
+FR-1 a FR-16, FR-21, FR-22 e FR-25 a FR-27, com login por e-mail (código de 6 dígitos, com magic link como alternativa no navegador), PWA instalável no iPhone e funcionamento offline durante o treino.
 
 ### 6.2 Fora do MVP
 
-Strava (FR-17), Plano alimentar e Lista de mercado (FR-18 a FR-20), Marcos hormonais, Exames e Resumo para consulta (FR-23, FR-24), calorias por refeição (FR-28), Comunidade (FR-29 a FR-33, v2), chamada direta de IA e notificações push.
+Strava (FR-17), Plano alimentar e Lista de mercado (FR-18 a FR-20), Marcos hormonais, Exames e Resumo para consulta (FR-23, FR-24), calorias por refeição (FR-20), Comunidade (FR-29 a FR-33, v2), chamada direta de IA e notificações push.
 
 ### 6.3 Roteiro dia a dia
 
 - [ ] **Dia 1 (19/10).** Repositório no GitHub, BMAD instalado, este PRD em `docs/`, projeto Supabase criado e schema do banco (§7).
-- [ ] **Dia 2 (20/10).** Esqueleto do PWA (React + Vite), login, navegação Hoje / Treinar / Evolução / Perfil, deploy na Vercel e instalação no iPhone.
+- [x] **Dia 2 (20/10).** Esqueleto do PWA (React + Vite), login, navegação Hoje / Treinar / Evolução / Perfil, deploy na Vercel e instalação no iPhone. *Código pronto (build e testes passando); falta o Ingrid ligar o projeto na Vercel com as variáveis do Supabase e instalar no iPhone.*
 - [ ] **Dia 3 (21/10).** Catálogo de Exercícios, Templates e Rotação manual. Tela Hoje com Próximo treino (FR-1 a FR-4).
 - [ ] **Dia 4 (22/10).** Registro de musculação com Séries, timer, Duração, Volume e salvamento offline (FR-5 a FR-9, FR-25 a FR-27). Usar no treino do dia.
 - [ ] **Dia 5 (23/10).** Formato de Programa (JSON), Prompts-modelo, importação com prévia e mapeamento de Exercícios (FR-10 a FR-14).
@@ -253,12 +253,20 @@ O app guarda dados de saúde, fotos do corpo e informações de hormonização, 
 
 ### Perguntas em aberto
 
-- [ ] Nome do app e identidade visual: partir da linguagem do portfólio (Space Grotesk, Space Mono, monocromático) ou criar outra?
+- [x] Nome do app e identidade visual. **Decidido (19/10):** nome **Tônus**; identidade nova, calma, estilo app de bem-estar: fundo off-white, acentos lima e lilás, cantos arredondados, Barlow Condensed nos títulos e Inter no resto.
 - [ ] Você vai programar junto (aprendendo React/Supabase) ou conduzir só por vibe coding com Claude/Codex?
 - [ ] O Resumo para consulta é feito para você levar, ou deveria ter um link para compartilhar direto com endocrinologista e nutricionista?
 - [ ] Quais marcadores de exame você quer digitar além de guardar o arquivo?
 - [ ] Hot yoga entra na Rotação (dia fixo) ou só como Sessão avulsa?
 - [ ] Usar o Strava como ponte do Amazfit está ok, ou você prefere não depender dele?
+
+### Bloqueios do MVP (validação do PRD, 19/10)
+
+- [x] **Login no PWA instalado.** No iOS, o magic link abre no Safari, que não compartilha a sessão com o app da Tela de Início. **Decidido:** login por código de 6 dígitos enviado por e-mail; o link continua valendo no navegador.
+- [ ] **Pular o Próximo treino (FR-2).** Pular não gera Sessão concluída, então a Rotação não avança pelo FR-1. Proposta: o pulo grava uma Sessão com status pulada; trocar por um Template fora da Rotação não move a Rotação. Decidir antes do Dia 3.
+- [ ] **Sessões planejadas da semana (FR-3, métrica de ≥ 90%).** A Rotação é uma sequência sem dias da semana. Proposta: dias de treino definidos no Perfil e os próximos itens da Rotação projetados nesses dias. Decidir antes do Dia 3.
+- [ ] **Base de sincronização (FR-7, FR-8).** Só `sessions` tem `updated_at` e nenhuma tabela tem remoção lógica; apagar uma Série offline não chegaria ao Supabase. Proposta: migration `0002` com `updated_at` e `deleted_at` nas tabelas sincronizadas. Antes do Dia 4.
+- [ ] **1RM estimado (FR-9, FR-22).** Fórmula não definida. Proposta: Epley (peso × (1 + reps/30)).
 
 ### Índice de premissas
 
