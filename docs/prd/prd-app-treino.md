@@ -184,7 +184,7 @@ Strava (FR-17), Plano alimentar e Lista de mercado (FR-18 a FR-20), Marcos hormo
 
 - [ ] **Dia 1 (19/10).** Repositório no GitHub, BMAD instalado, este PRD em `docs/`, projeto Supabase criado e schema do banco (§7). *Feito: repositório, PRD, projeto Supabase `app-treino` (us-east-2) com as migrations 0001 e 0002, e-mail com código via Resend. Falta: BMAD.*
 - [x] **Dia 2 (20/10).** Esqueleto do PWA (React + Vite), login, navegação Hoje / Treinar / Evolução / Perfil, deploy na Vercel e instalação no iPhone. *Código pronto (build e testes passando); falta o Ingrid ligar o projeto na Vercel com as variáveis do Supabase e instalar no iPhone.*
-- [ ] **Dia 3 (21/10).** Catálogo de Exercícios, Templates e Rotação manual. Tela Hoje com Próximo treino e Agenda da semana (FR-1 a FR-4, FR-34, FR-35).
+- [x] **Dia 3 (21/10).** Catálogo de Exercícios, Templates e Rotação manual. Tela Hoje com Próximo treino e Agenda da semana (FR-1 a FR-4, FR-34, FR-35). *Feito: sincronização Dexie ↔ Supabase, editor de Template com catálogo, ficha do Exercício (pictograma animado sem marca de gênero com músculos acesos, mapa muscular e "Como fazer"), montagem da Rotação e calendário com pular, mudar dia e arrastar. Migration 0003 aplicada.*
 - [ ] **Dia 4 (22/10).** Registro de musculação com Séries, timer, Duração, Volume e salvamento offline (FR-5 a FR-9, FR-25 a FR-27). Usar no treino do dia.
 - [ ] **Dia 5 (23/10).** Formato de Programa (JSON), Prompts-modelo, importação com prévia e mapeamento de Exercícios (FR-10 a FR-14).
 - [ ] **Dia 6 (24/10).** Cardio e yoga manuais no calendário (FR-15, FR-16). Registro corporal e tela Evolução (FR-21, FR-22).

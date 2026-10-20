@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { sampleTodayData } from './sample'
+import { sampleTodayData, sampleTodayTwoToday } from './sample'
 import { buildTodayModel } from './today'
 
 const TUE = '2026-10-20'
@@ -30,5 +30,14 @@ describe('tela Hoje', () => {
     const model = buildTodayModel(data, TUE)
     expect(model.next).toBeNull()
     expect(model.hasRotation).toBe(false)
+  })
+})
+
+describe('dia com dois treinos', () => {
+  it('terça com o B feito mostra o B como feito e a corrida ainda planejada hoje', () => {
+    const model = buildTodayModel(sampleTodayTwoToday(), TUE, new Date('2026-10-20T12:00:00'))
+    expect(model.week[1].items.map((i) => `${i.status}:${i.modality}`)).toEqual(['done:strength', 'planned:run'])
+    expect(model.next?.label).toBe('Corrida leve 5 km')
+    expect(model.next?.dateLabel).toBe('Hoje · ter 20/10')
   })
 })

@@ -1,6 +1,6 @@
 import { MemoryRouter } from 'react-router'
 import TabBar from '../components/TabBar'
-import { sampleCatalog, sampleProgressData, sampleTemplateDraft, sampleTodayData } from '../lib/sample'
+import { sampleCatalog, sampleProgressData, sampleTemplateDraft, sampleTodayData, sampleTodayTwoToday } from '../lib/sample'
 import { useState } from 'react'
 import TemplateEditorView from './TemplateEditorView'
 import RotationEditorView from './RotationEditorView'
@@ -94,6 +94,8 @@ export default function Preview() {
       '/',
     )
   }
+  if (tela === 'hoje-dois')
+    return wrap(<TodayView model={buildTodayModel(sampleTodayTwoToday(), '2026-10-20', now)} onStart={noop} onSkip={noop} onMove={noop} />, '/')
   if (tela === 'hoje' || tela === 'hoje-vazio') {
     const data = sampleTodayData()
     const model = buildTodayModel(

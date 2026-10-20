@@ -189,3 +189,22 @@ export function sampleTemplateDraft(): import('./templates').TemplateDraft {
     ],
   }
 }
+
+// Variante: terça com 2 treinos, o Treino B já feito hoje e a corrida ainda planejada
+export function sampleTodayTwoToday(): TodayData {
+  const d = sampleTodayData()
+  const slots = [...d.rotation!.weekly_slots]
+  slots[1] = 2
+  return {
+    ...d,
+    rotation: { ...d.rotation!, weekly_slots: slots },
+    occurrences: [
+      ...d.occurrences,
+      { ...base, id: 'occ-1', owner_id: owner, rotation_id: 'rot', seq: 1, planned_on: null, resolution: 'done', resolved_on: '2026-10-20', session_id: 'ses-b' },
+    ],
+    weekSessions: [
+      ...d.weekSessions,
+      { ...d.weekSessions[0], id: 'ses-b', rotation_item_id: 'item-1', template_id: 'tpl-Treino B', started_at: '2026-10-20T10:00:00.000Z', ended_at: '2026-10-20T11:00:00.000Z' },
+    ],
+  }
+}

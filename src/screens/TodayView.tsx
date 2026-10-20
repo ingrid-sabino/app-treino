@@ -69,9 +69,9 @@ const barColor: Record<Modality, string> = {
   other: 'bg-muted',
 }
 
-function Check() {
+function Check({ small = false }: { small?: boolean }) {
   return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="square">
+    <svg viewBox="0 0 24 24" className={small ? 'h-3.5 w-3.5' : 'h-5 w-5'} fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="square">
       <path d="M5 12.5 10 17 19 7" />
     </svg>
   )
@@ -153,11 +153,16 @@ function WeekStrip({
           const plannedItems = day.items.filter((i) => i.status === 'planned')
           const isDropTarget = drag?.moved && drag.over === day.date && day.date !== drag.from
           const canDrop = day.date >= today
-          const tile = doneItem
-            ? modalityStyle[doneItem.modality].className
-            : day.isToday
-              ? 'bg-surface text-ink'
-              : 'bg-surface-2 text-ink'
+          // Dois treinos ou mais no dia: o quadrado se divide em colunas (feito / falta)
+          const split = day.items.length > 1
+          const doneCount = day.items.length - plannedItems.length
+          const tile = split
+            ? 'bg-surface-2 text-ink'
+            : doneItem
+              ? modalityStyle[doneItem.modality].className
+              : day.isToday
+                ? 'bg-surface text-ink'
+                : 'bg-surface-2 text-ink'
           return (
             <li key={day.date} className="flex flex-col items-center gap-1">
               <span className={`text-[11px] font-bold uppercase ${day.isToday ? 'text-ink' : 'text-muted'}`}>
@@ -169,22 +174,42 @@ function WeekStrip({
                 onPointerMove={onPointerMove}
                 onPointerUp={() => onPointerUp(day)}
                 onPointerCancel={() => setDrag(null)}
-                className={`relative flex h-12 w-full touch-none select-none items-center justify-center overflow-hidden rounded-md font-display text-xl font-bold transition ${tile} ${
-                  day.isToday ? 'ring-2 ring-ink ring-inset' : ''
-                } ${isDropTarget ? (canDrop ? 'scale-105 ring-2 ring-lime' : 'opacity-40') : ''} ${
+                className={`relative flex h-12 w-full touch-none select-none items-center justify-center overflow-hidden rounded-md font-display text-xl font-bold transition ${tile}  ${isDropTarget ? (canDrop ? 'scale-105 ring-2 ring-lime' : 'opacity-40') : ''} ${
                   drag?.moved && drag.from === day.date ? 'opacity-40' : ''
                 }`}
               >
-                {doneItem ? <Check /> : day.dayNumber}
-                {/* Treinos planejados: uma faixa por treino, na cor da Modalidade */}
-                {!doneItem && plannedItems.length > 0 && (
-                  <div className="absolute inset-x-0 bottom-0 flex h-1.5 gap-px">
-                    {plannedItems.map((item, i) => (
-                      <span key={i} className={`flex-1 ${barColor[item.modality]}`} />
-                    ))}
+                {split ? (
+                  <div className="absolute inset-0 flex gap-0.5">
+                    {day.items.map((item, i) =>
+                      item.status === 'done' ? (
+                        <span key={i} className={`flex flex-1 items-center justify-center ${modalityStyle[item.modality].className}`}>
+                          <Check small />
+                        </span>
+                      ) : (
+                        <span key={i} className={`relative flex-1 ${day.isToday ? 'bg-surface' : 'bg-surface-2'}`}>
+                          <span className={`absolute inset-x-0 bottom-0 h-1.5 ${barColor[item.modality]}`} />
+                        </span>
+                      ),
+                    )}
+                    {doneCount === 0 && <span className="absolute inset-0 flex items-center justify-center">{day.dayNumber}</span>}
                   </div>
+                ) : doneItem ? (
+                  <Check />
+                ) : (
+                  day.dayNumber
+                )}
+                {/* Hoje: moldura por cima das colunas e faixas */}
+                {day.isToday && <span className="pointer-events-none absolute inset-0 z-10 rounded-md border-2 border-ink" />}
+                {/* Um treino planejado: faixa na cor da Modalidade */}
+                {!split && !doneItem && plannedItems.length > 0 && (
+                  <span className={`absolute inset-x-0 bottom-0 h-1.5 ${barColor[plannedItems[0].modality]}`} />
                 )}
               </div>
+              {split && (
+                <span className="font-display text-xs font-bold leading-none text-muted" aria-label={`${doneCount} de ${day.items.length} treinos feitos`}>
+                  {doneCount}/{day.items.length}
+                </span>
+              )}
             </li>
           )
         })}
