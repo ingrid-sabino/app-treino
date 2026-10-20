@@ -1,4 +1,4 @@
-# app-treino · Tônus
+# app-treino · Tönus
 
 App pessoal de acompanhamento de treino: musculação, corrida, yoga e outras modalidades num só calendário, com a Rotação que sempre sabe qual é o próximo treino, Programas gerados por IA importados em um toque, evolução de força e corpo e, depois, plano alimentar e comunidade.
 

@@ -1,4 +1,4 @@
-"""Gera os ícones do PWA (Tônus) em public/. Rode: python3 scripts/gerar-icones.py"""
+"""Gera os ícones do PWA (Tönus) em public/. Rode: python3 scripts/gerar-icones.py"""
 from PIL import Image, ImageDraw
 
 LIME = (212, 242, 106)

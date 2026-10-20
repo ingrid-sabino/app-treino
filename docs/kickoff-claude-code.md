@@ -38,15 +38,17 @@ Durante o setup, aponte a pasta de saída dos documentos para `docs/` e crie uma
 
 > **Feito em 19/10 pelo Claude Code (API do Supabase):** projeto `app-treino` (ref `yfksusawrjnhpoaxbjen`, região us-east-2), migrations `0001` e `0002` aplicadas, código com 6 dígitos, *Site URL* `https://app-treino.vercel.app` e *Redirect URLs* `https://app-treino.vercel.app/**` e `https://app-treino-*.vercel.app/**`. Se o domínio da Vercel for outro, ajuste em **Authentication → URL Configuration**.
 >
-> **Pendente:** o template de e-mail abaixo. No plano grátis, o Supabase só permite editar templates com um SMTP próprio (**Authentication → Emails → SMTP Settings**). O SMTP padrão também limita a poucos e-mails por hora.
+> **Feito depois:** SMTP do Resend e template com o código (passo 3 abaixo).
 
 1. Crie um projeto novo (região São Paulo, `sa-east-1`).
 2. Abra **SQL Editor** e rode o conteúdo de `supabase/migrations/0001_init.sql`.
 3. Em **Authentication → Providers**, deixe só e-mail (magic link) ligado.
-   Em **Authentication → Emails → Magic Link**, troque o corpo do e-mail para incluir o código, que é o que loga o app instalado no iPhone:
+   No plano grátis, o Supabase só deixa editar os e-mails com SMTP próprio. Em **Authentication → Emails → SMTP Settings**, ligue o SMTP do [Resend](https://resend.com) (grátis): host `smtp.resend.com`, porta `465`, usuário `resend`, senha = API key do Resend, remetente `onboarding@resend.dev`, nome `Tönus`. O remetente de teste só entrega para o e-mail da conta no Resend; para outras pessoas, é preciso um domínio próprio.
+
+   Depois, em **Authentication → Emails → Magic Link** (e também em **Confirm signup**, usado no primeiro login), troque o corpo do e-mail para incluir o código, que é o que loga o app instalado no iPhone:
 
    ```html
-   <h2>Seu código do Tônus</h2>
+   <h2>Seu código do Tönus</h2>
    <p style="font-size:32px;letter-spacing:6px"><strong>{{ .Token }}</strong></p>
    <p>Ou, no navegador, <a href="{{ .ConfirmationURL }}">entre por este link</a>.</p>
    ```

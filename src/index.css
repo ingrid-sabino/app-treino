@@ -3,7 +3,7 @@
 @import '@fontsource/barlow-condensed/500.css';
 @import '@fontsource/barlow-condensed/700.css';
 
-/* Identidade visual do Tônus: off-white calmo, acentos lima e lilás,
+/* Identidade visual do Tönus: off-white calmo, acentos lima e lilás,
    cantos bem arredondados. Barlow Condensed nos títulos e números; Inter no resto. */
 @theme {
   --font-sans: 'Inter Variable', system-ui, sans-serif;

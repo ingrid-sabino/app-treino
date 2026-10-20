@@ -40,7 +40,7 @@ export default function Login() {
   return (
     <main className="flex min-h-dvh flex-col px-6 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(4rem,env(safe-area-inset-top))]">
       <img src="/pwa-192x192.png" alt="" className="h-16 w-16 rounded-2xl" />
-      <h1 className="mt-6 text-6xl uppercase leading-none">Tônus</h1>
+      <h1 className="mt-6 text-6xl uppercase leading-none">Tönus</h1>
       <p className="mt-3 text-muted">Seu treino de hoje, sempre pronto.</p>
 
       {!supabaseConfigured && (

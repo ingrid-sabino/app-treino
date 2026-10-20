@@ -182,7 +182,7 @@ Strava (FR-17), Plano alimentar e Lista de mercado (FR-18 a FR-20), Marcos hormo
 
 ### 6.3 Roteiro dia a dia
 
-- [ ] **Dia 1 (19/10).** Repositório no GitHub, BMAD instalado, este PRD em `docs/`, projeto Supabase criado e schema do banco (§7). *Supabase feito em 19/10: projeto `app-treino` criado, migrations `0001` e `0002` aplicadas, código de 6 dígitos e URLs de redirecionamento configurados. Falta o BMAD e o SMTP próprio para o e-mail com o código.*
+- [ ] **Dia 1 (19/10).** Repositório no GitHub, BMAD instalado, este PRD em `docs/`, projeto Supabase criado e schema do banco (§7). *Feito: repositório, PRD, projeto Supabase `app-treino` (us-east-2) com as migrations 0001 e 0002, e-mail com código via Resend. Falta: BMAD.*
 - [x] **Dia 2 (20/10).** Esqueleto do PWA (React + Vite), login, navegação Hoje / Treinar / Evolução / Perfil, deploy na Vercel e instalação no iPhone. *Código pronto (build e testes passando); falta o Ingrid ligar o projeto na Vercel com as variáveis do Supabase e instalar no iPhone.*
 - [ ] **Dia 3 (21/10).** Catálogo de Exercícios, Templates e Rotação manual. Tela Hoje com Próximo treino e Agenda da semana (FR-1 a FR-4, FR-34, FR-35).
 - [ ] **Dia 4 (22/10).** Registro de musculação com Séries, timer, Duração, Volume e salvamento offline (FR-5 a FR-9, FR-25 a FR-27). Usar no treino do dia.
@@ -257,7 +257,7 @@ O app guarda dados de saúde, fotos do corpo e informações de hormonização, 
 
 ### Perguntas em aberto
 
-- [x] Nome do app e identidade visual. **Decidido (19/10):** nome **Tônus**; identidade nova, calma, estilo app de bem-estar: fundo off-white, acentos lima e lilás, cantos arredondados, Barlow Condensed nos títulos e Inter no resto.
+- [x] Nome do app e identidade visual. **Decidido (19/10):** nome **Tönus**; identidade nova, calma, estilo app de bem-estar: fundo off-white, acentos lima e lilás, cantos arredondados, Barlow Condensed nos títulos e Inter no resto.
 - [ ] Você vai programar junto (aprendendo React/Supabase) ou conduzir só por vibe coding com Claude/Codex?
 - [ ] O Resumo para consulta é feito para você levar, ou deveria ter um link para compartilhar direto com endocrinologista e nutricionista?
 - [ ] Quais marcadores de exame você quer digitar além de guardar o arquivo?
@@ -267,7 +267,7 @@ O app guarda dados de saúde, fotos do corpo e informações de hormonização, 
 ### Bloqueios do MVP (validação do PRD, 19/10)
 
 - [x] **Login no PWA instalado.** No iOS, o magic link abre no Safari, que não compartilha a sessão com o app da Tela de Início. **Decidido:** login por código de 6 dígitos enviado por e-mail; o link continua valendo no navegador.
-- [ ] **E-mail com o código.** O plano grátis do Supabase não deixa editar o template de e-mail com o remetente padrão, e o template padrão só traz o link. Sem SMTP próprio, o código não chega e o login no PWA instalado não funciona. Precisa ligar um SMTP gratuito (ex.: Resend, Brevo ou Gmail com senha de app) e então trocar o template.
+- [x] **E-mail com o código.** O plano grátis do Supabase só deixa editar o template com SMTP próprio. **Feito:** SMTP do Resend (grátis) e template com o código de 6 dígitos, em login e no primeiro cadastro.
 - [x] **Pular o Próximo treino (FR-2).** **Decidido:** o treino pulado sai da fila e o sucessor ocupa o lugar dele. Fica registrado em `rotation_occurrences` (não vira Sessão, então não entra em Volume nem nas métricas).
 - [x] **Sessões planejadas da semana (FR-3, métrica de ≥ 90%).** **Decidido:** Dias de treino com quantidade por dia (FR-34) e mudança livre de dia (FR-35).
 - [x] **Base de sincronização (FR-7, FR-8).** **Feito:** migration `0002` com `updated_at` e `deleted_at` em todas as tabelas sincronizadas.
