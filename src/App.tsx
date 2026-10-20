@@ -8,6 +8,7 @@ import Profile from './screens/Profile'
 import Today from './screens/Today'
 import Train from './screens/Train'
 import TemplateEditor from './screens/TemplateEditor'
+import RotationEditor from './screens/RotationEditor'
 
 // Prévias visuais com dados de exemplo; o import dinâmico some do build de produção
 // Evolução carrega à parte (gráficos) para não pesar na abertura do app
@@ -33,6 +34,7 @@ export default function App() {
         <Route path="/" element={<Today />} />
         <Route path="/treinar" element={<Train />} />
         <Route path="/treinar/template/:id" element={<TemplateEditor />} />
+        <Route path="/treinar/rotacao/:id" element={<RotationEditor />} />
         <Route
           path="/evolucao"
           element={

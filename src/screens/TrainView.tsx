@@ -1,11 +1,8 @@
+import TrainingDays from '../components/TrainingDays'
 import { Button, Card, Label, ModalityTag, SectionHeader } from '../components/ui'
 import type { TrainModel } from '../lib/train'
 
 // Aba Treinar, só apresentação (dados em lib/train.ts).
-
-const WEEKDAYS = ['seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom']
-const WEEKDAY_NAMES = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo']
-const MAX_SLOTS = 3
 
 interface Actions {
   onStartFree?: () => void
@@ -14,38 +11,9 @@ interface Actions {
   onSlotsChange?: (slots: number[]) => void
   onCreateTemplate?: () => void
   onOpenTemplate?: (id: string) => void
+  onEditRotation?: (id: string) => void
+  onNewRotation?: () => void
   onImport?: () => void
-}
-
-function TrainingDays({ slots, onChange }: { slots: number[]; onChange?: (slots: number[]) => void }) {
-  const total = slots.reduce((a, b) => a + b, 0)
-  return (
-    <div className="mt-5 border-t border-white/15 pt-4">
-      <div className="flex items-baseline justify-between">
-        <Label className="opacity-70">Dias de treino</Label>
-        <p className="font-display text-lg font-bold uppercase">
-          {total} <span className="opacity-60">por semana</span>
-        </p>
-      </div>
-      <div className="mt-2 grid grid-cols-7 gap-1.5">
-        {slots.map((n, i) => (
-          <button
-            key={i}
-            aria-label={`${WEEKDAY_NAMES[i]}: ${n} treino(s)`}
-            disabled={!onChange}
-            onClick={() => onChange?.(slots.map((v, j) => (j === i ? (v + 1) % (MAX_SLOTS + 1) : v)))}
-            className={`flex h-14 flex-col items-center justify-center rounded-md font-display font-bold ${
-              n > 0 ? 'bg-lime text-on-lime' : 'border border-white/20 text-on-inverse/60'
-            }`}
-          >
-            <span className="text-[11px] uppercase">{WEEKDAYS[i]}</span>
-            <span className="text-xl leading-none">{n > 0 ? n : '–'}</span>
-          </button>
-        ))}
-      </div>
-      {onChange && <p className="mt-2 text-xs opacity-60">Toque num dia para mudar quantos treinos cabem nele.</p>}
-    </div>
-  )
 }
 
 export default function TrainView({ model, ...actions }: { model: TrainModel } & Actions) {
@@ -73,7 +41,16 @@ export default function TrainView({ model, ...actions }: { model: TrainModel } &
       </Card>
 
       <section className="space-y-2 pt-2">
-        <SectionHeader title="Rotação" />
+        <SectionHeader
+          title="Rotação"
+          action={
+            actions.onNewRotation && (
+              <button className="text-sm font-semibold text-lilac-strong" onClick={actions.onNewRotation}>
+                + Nova
+              </button>
+            )
+          }
+        />
         {rotation ? (
           <Card tone="inverse" className="p-5">
             <Label className="opacity-70">{rotation.sourceLabel}</Label>
@@ -91,12 +68,24 @@ export default function TrainView({ model, ...actions }: { model: TrainModel } &
                 </li>
               ))}
             </ol>
-            <TrainingDays slots={rotation.weeklySlots} onChange={actions.onSlotsChange} />
+            <div className="mt-5 border-t border-white/15 pt-4">
+              <TrainingDays slots={rotation.weeklySlots} onChange={actions.onSlotsChange} onInverse />
+            </div>
+            {actions.onEditRotation && (
+              <Button variant="dark" size="md" className="mt-4 border border-white/20" onClick={() => actions.onEditRotation!(rotation.id)}>
+                Editar Rotação
+              </Button>
+            )}
           </Card>
         ) : (
           <Card className="p-5">
             <p className="font-display text-2xl font-bold uppercase">Nenhuma Rotação ativa</p>
             <p className="mt-1 text-sm text-muted">Importe um Programa ou crie Templates e monte a ordem dos treinos.</p>
+            {actions.onNewRotation && (
+              <Button size="md" className="mt-4" onClick={actions.onNewRotation}>
+                Montar Rotação
+              </Button>
+            )}
           </Card>
         )}
       </section>

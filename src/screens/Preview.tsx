@@ -3,6 +3,8 @@ import TabBar from '../components/TabBar'
 import { sampleCatalog, sampleProgressData, sampleTemplateDraft, sampleTodayData } from '../lib/sample'
 import { useState } from 'react'
 import TemplateEditorView from './TemplateEditorView'
+import RotationEditorView from './RotationEditorView'
+import type { RotationDraft } from '../lib/rotations'
 import { buildProgressModel } from '../lib/progress'
 import { buildTrainModel } from '../lib/train'
 import { getTheme } from '../lib/theme'
@@ -68,11 +70,12 @@ export default function Preview() {
         ))}
       </main>
     )
+  if (tela === 'rotacao' || tela === 'rotacao-adicionar') return <RotationPreview adding={tela === 'rotacao-adicionar'} />
   if (tela === 'login') return <Login />
   if (tela === 'login-codigo') return <Login initialStep="code" initialEmail="ingridsabino000@gmail.com" initialCode="4821" />
   if (tela === 'treinar') {
     const d = sampleTodayData()
-    return wrap(<TrainView model={buildTrainModel(d, '2026-10-20')} onStartFree={noop} onLogCardio={noop} onLogYoga={noop} onSlotsChange={noop} onCreateTemplate={noop} onImport={noop} />, '/treinar')
+    return wrap(<TrainView model={buildTrainModel(d, '2026-10-20')} onStartFree={noop} onLogCardio={noop} onLogYoga={noop} onSlotsChange={noop} onCreateTemplate={noop} onImport={noop} onEditRotation={noop} onNewRotation={noop} />, '/treinar')
   }
   if (tela === 'evolucao') return wrap(<ProgressView model={buildProgressModel(sampleProgressData(), '2026-10-20')} onLogBody={noop} />, '/evolucao')
   if (tela === 'perfil') return wrap(<ProfileView email="ingrid@exemplo.com" theme={getTheme()} onThemeChange={noop} onSignOut={noop} />, '/perfil')
@@ -121,6 +124,32 @@ function TemplatePreview({ picker, frames }: { picker: boolean; frames?: number 
       onCreateExercise={async () => sampleCatalog()[0]}
       initialPickerOpen={picker}
       initialFramesIndex={frames}
+    />
+  )
+}
+
+function RotationPreview({ adding }: { adding: boolean }) {
+  const d = sampleTodayData()
+  const [draft, setDraft] = useState<RotationDraft>({
+    id: 'rot',
+    isNew: false,
+    name: 'Força + corrida',
+    isActive: false,
+    weeklySlots: d.rotation!.weekly_slots,
+    items: d.items.map((i) => ({ key: i.id, templateId: i.template_id, modality: i.modality, label: i.label })),
+  })
+  const [activate, setActivate] = useState(true)
+  return (
+    <RotationEditorView
+      draft={draft}
+      templates={d.templates.map((t) => ({ id: t.id, name: t.name, modality: t.modality, notes: t.notes }))}
+      activate={activate}
+      onChange={setDraft}
+      onActivateChange={setActivate}
+      onSave={noop}
+      onCancel={noop}
+      onCreateTemplate={noop}
+      initialAddOpen={adding}
     />
   )
 }

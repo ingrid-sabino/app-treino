@@ -30,6 +30,8 @@ export default function Train() {
       // Dias de treino da Rotação (FR-34)
       onCreateTemplate={() => navigate('/treinar/template/novo')}
       onOpenTemplate={(id) => navigate(`/treinar/template/${id}`)}
+      onNewRotation={() => navigate('/treinar/rotacao/nova')}
+      onEditRotation={(id) => navigate(`/treinar/rotacao/${id}`)}
       onSlotsChange={rotation ? (weekly_slots) => saveLocal('rotations', { ...rotation, weekly_slots }) : undefined}
     />
   )
