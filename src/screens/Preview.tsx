@@ -9,6 +9,7 @@ import ProgressView from './ProgressView'
 import TrainView from './TrainView'
 import { buildTodayModel } from '../lib/today'
 import DesignSheet from './DesignSheet'
+import Login from './Login'
 import TodayView from './TodayView'
 
 // Prévias visuais com dados de exemplo (só em desenvolvimento): /design?tela=...
@@ -23,6 +24,8 @@ export default function Preview() {
       <TabBar />
     </MemoryRouter>
   )
+  if (tela === 'login') return <Login />
+  if (tela === 'login-codigo') return <Login initialStep="code" initialEmail="ingridsabino000@gmail.com" initialCode="4821" />
   if (tela === 'treinar') {
     const d = sampleTodayData()
     return wrap(<TrainView model={buildTrainModel(d, '2026-10-20')} onStartFree={noop} onLogCardio={noop} onLogYoga={noop} onSlotsChange={noop} onCreateTemplate={noop} onImport={noop} />, '/treinar')
