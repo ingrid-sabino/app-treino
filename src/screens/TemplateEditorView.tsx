@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ExerciseFrames, ExerciseThumb } from '../components/ExerciseMedia'
+import { ExerciseSheetContent, ExerciseThumb } from '../components/ExerciseMedia'
 import Sheet from '../components/Sheet'
 import { Button, Card, Input, Label, SectionHeader, TextButton, modalityStyle } from '../components/ui'
 import type { Exercise, Modality } from '../lib/db'
@@ -94,10 +94,11 @@ function ExerciseCard({ ex, index, count, onChange, onMove, onRemove, onShowFram
 }
 
 // Catálogo de Exercícios: busca, filtro por grupo e criação do que faltar
-export function ExercisePicker({ catalog, onPick, onCreate }: {
+export function ExercisePicker({ catalog, onPick, onCreate, onInfo }: {
   catalog: Exercise[]
   onPick: (ex: Exercise) => void
   onCreate?: (name: string, muscleGroup: string) => void
+  onInfo?: (ex: Exercise) => void
 }) {
   const [query, setQuery] = useState('')
   const [group, setGroup] = useState<string | null>(null)
@@ -139,8 +140,11 @@ export function ExercisePicker({ catalog, onPick, onCreate }: {
         )}
         {list.map((e) => (
           <li key={e.id}>
-            <button className="flex w-full items-center gap-3 py-2.5 text-left" onClick={() => onPick(e)}>
-              <ExerciseThumb name={e.name} muscleGroup={e.muscle_group} className="h-12 w-12" />
+            <div className="flex w-full items-center gap-3 py-2.5">
+              <button aria-label={`Ver ficha: ${e.name}`} onClick={() => onInfo?.(e)} disabled={!onInfo}>
+                <ExerciseThumb name={e.name} muscleGroup={e.muscle_group} className="h-12 w-12" />
+              </button>
+              <button className="flex flex-1 items-center gap-3 text-left" onClick={() => onPick(e)}>
               <span className="flex-1">
                 <span className="font-display text-lg font-bold uppercase">{e.name}</span>
                 <span className="block text-xs capitalize text-muted">
@@ -148,7 +152,8 @@ export function ExercisePicker({ catalog, onPick, onCreate }: {
                 </span>
               </span>
               <span className="flex h-8 w-8 items-center justify-center rounded-sm border border-ink text-xl font-bold">+</span>
-            </button>
+              </button>
+            </div>
           </li>
         ))}
         {list.length === 0 && !query.trim() && <li className="py-6 text-center text-sm text-muted">O catálogo ainda está sincronizando.</li>}
@@ -179,7 +184,7 @@ export default function TemplateEditorView({
   initialFramesIndex?: number
 }) {
   const [picker, setPicker] = useState(initialPickerOpen)
-  const [frames, setFrames] = useState<DraftExercise | null>(initialFramesIndex != null ? draft.exercises[initialFramesIndex] : null)
+  const [frames, setFrames] = useState<{ name: string } | null>(initialFramesIndex != null ? draft.exercises[initialFramesIndex] : null)
   const isStrength = draft.modality === 'strength'
 
   return (
@@ -261,16 +266,11 @@ export default function TemplateEditorView({
         )}
       </div>
 
-      {frames && (
-        <Sheet title={frames.name} onClose={() => setFrames(null)}>
-          <ExerciseFrames name={frames.name} />
-        </Sheet>
-      )}
-
       {picker && (
         <Sheet title="Adicionar Exercício" onClose={() => setPicker(false)}>
           <ExercisePicker
             catalog={catalog}
+            onInfo={(ex) => setFrames({ name: ex.name })}
             onPick={(ex) => {
               onChange(addExercise(draft, ex))
               setPicker(false)
@@ -286,6 +286,12 @@ export default function TemplateEditorView({
           />
         </Sheet>
       )}
+      {frames && (
+        <Sheet title={frames.name} onClose={() => setFrames(null)}>
+          <ExerciseSheetContent name={frames.name} />
+        </Sheet>
+      )}
+
     </main>
   )
 }

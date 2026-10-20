@@ -9,6 +9,7 @@ PWA de acompanhamento de treino (musculação + cardio + yoga), inspirado no Hev
 - Conversa, documentação, textos da interface e mensagens de commit: português do Brasil.
 - Nomes de código (tabelas, variáveis, componentes): inglês.
 - Ao se referir ao dono do projeto, Ingrid, use pronomes masculinos (ele/dele), como no PRD.
+- Textos da interface falam com pessoas de qualquer gênero: nada de adjetivos ou particípios flexionados para a pessoa ("deixe o corpo suspenso", não "fique pendurado"). Ilustrações também sem marca de gênero.
 
 ## Stack (PRD §7)
 

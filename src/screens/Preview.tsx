@@ -15,6 +15,7 @@ import Login from './Login'
 import { MuscleMap } from '../components/MuscleMap'
 import { PictogramView } from '../components/Pictogram'
 import { PICTOGRAMS } from '../lib/pictograms'
+import { EXERCISE_INFO, highlightFor } from '../lib/exerciseInfo'
 import TodayView from './TodayView'
 
 // Prévias visuais com dados de exemplo (só em desenvolvimento): /design?tela=...
@@ -29,8 +30,8 @@ export default function Preview() {
       <TabBar />
     </MemoryRouter>
   )
-  if (tela === 'template' || tela === 'template-catalogo' || tela === 'template-execucao')
-    return <TemplatePreview picker={tela === 'template-catalogo'} frames={tela === 'template-execucao' ? 1 : undefined} />
+  if (tela === 'template' || tela === 'template-catalogo' || tela === 'template-execucao' || tela === 'ficha')
+    return <TemplatePreview picker={tela === 'template-catalogo'} frames={tela === 'template-execucao' ? 1 : tela === 'ficha' ? 0 : undefined} />
   if (tela === 'pictogramas')
     return (
       <main className="mx-auto max-w-lg space-y-3 px-4 py-6">
@@ -48,7 +49,7 @@ export default function Preview() {
   if (tela === 'pictograma-animado')
     return (
       <main className="mx-auto max-w-lg px-4 py-6">
-        <PictogramView def={PICTOGRAMS['Agachamento livre']} animated className="w-full rounded-md" />
+        <PictogramView def={PICTOGRAMS['Agachamento livre']} animated highlight={highlightFor(EXERCISE_INFO['Agachamento livre'])} className="w-full rounded-md" />
       </main>
     )
   if (tela === 'musculos')

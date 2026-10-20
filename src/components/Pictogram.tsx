@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 
 // Pictogramas de execução dos Exercícios: figura geométrica sem marca de gênero,
-// em duas poses (início e fim), com animação entre elas. Corpo na cor do texto,
-// equipamento em lima. Quadro de 100 × 74 (y de -8 a 66); o chão fica em y = 60.
+// em duas poses (início e fim), com animação entre elas. Corpo na cor do texto;
+// as partes que trabalham acendem (principal em lima, secundário em lilás);
+// equipamento em cinza. Quadro de 100 × 74 (y de -8 a 66); o chão fica em y = 60.
 // As duas poses de um Exercício têm os mesmos elementos, para a animação interpolar.
 
 export type P = [number, number]
@@ -28,6 +29,9 @@ export interface Pose {
   cables?: [P, P][] // cabo de polia
 }
 
+export type Segment = 'torso' | 'upperArm' | 'forearm' | 'thigh' | 'shin' | 'shoulder' | 'hip'
+export type Highlight = Partial<Record<Segment, 'primary' | 'secondary'>>
+
 export interface PictogramDef {
   start: Pose
   end: Pose
@@ -42,7 +46,6 @@ const SPLINES = '0 0 1 1;0.45 0 0.55 1;0 0 1 1;0.45 0 0.55 1'
 
 const shift = ([x, y]: P, dx: number): P => [x + dx, y]
 const d2 = (a: P, b: P) => `M${a[0]} ${a[1]}L${b[0]} ${b[1]}`
-const d3 = (a: P, b: P, c: P) => `M${a[0]} ${a[1]}L${b[0]} ${b[1]}L${c[0]} ${c[1]}`
 
 function farLimbs(p: Pose) {
   return {
@@ -89,39 +92,60 @@ function Dot({ a, b, r, animated, ...rest }: { a: P; b: P; r: number; animated: 
 }
 
 const BODY = { stroke: 'var(--text)', strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, fill: 'none' }
-const GEAR = { stroke: 'var(--lime)', strokeLinecap: 'round' as const, fill: 'none' }
+const GEAR = { stroke: 'var(--text-muted)', strokeLinecap: 'round' as const, fill: 'none' }
+const HIGHLIGHT = { primary: 'var(--lime)', secondary: 'var(--lilac)' }
 
-function Figure({ def, frame, animated }: { def: PictogramDef; frame: 0 | 1; animated: boolean }) {
+// Segmento do corpo: aceso tem contorno em tinta e miolo na cor do músculo
+function Bone({ a, b, width, tone, animated, opacity = 1 }: { a: string; b: string; width: number; tone?: 'primary' | 'secondary'; animated: boolean; opacity?: number }) {
+  if (!tone) return <Path a={a} b={b} animated={animated} {...BODY} strokeOpacity={opacity} strokeWidth={width} />
+  return (
+    <g opacity={opacity}>
+      <Path a={a} b={b} animated={animated} {...BODY} strokeWidth={width + 2.4} />
+      <Path a={a} b={b} animated={animated} {...BODY} stroke={HIGHLIGHT[tone]} strokeWidth={width} />
+    </g>
+  )
+}
+
+function Figure({ def, frame, animated, highlight = {} }: { def: PictogramDef; frame: 0 | 1; animated: boolean; highlight?: Highlight }) {
   const a = frame === 0 ? def.start : def.end
   const b = frame === 0 ? def.end : def.start
   const fa = farLimbs(a)
   const fb = farLimbs(b)
-  const farOpacity = def.frontal ? 1 : 0.35
+  const far = def.frontal ? 1 : 0.4
+  const h = highlight
   return (
     <g>
       {def.floor !== false && <path d="M6 60H94" stroke="var(--line)" strokeWidth={1.5} />}
       {(a.lines ?? []).map((l, i) => (
-        <Path key={`l${i}`} a={d2(...l)} b={d2(...(b.lines ?? [])[i])} animated={animated} {...GEAR} strokeWidth={3.5} />
+        <Path key={`l${i}`} a={d2(...l)} b={d2(...(b.lines ?? [])[i])} animated={animated} {...GEAR} strokeWidth={3} />
       ))}
       {(a.cables ?? []).map((l, i) => (
         <Path key={`c${i}`} a={d2(...l)} b={d2(...(b.cables ?? [])[i])} animated={animated} {...GEAR} strokeWidth={1.2} />
       ))}
-      <Path a={d3(fa.shoulder, fa.elbow, fa.hand)} b={d3(fb.shoulder, fb.elbow, fb.hand)} animated={animated} {...BODY} strokeOpacity={farOpacity} strokeWidth={4} />
-      <Path a={d3(fa.hip, fa.knee, fa.foot)} b={d3(fb.hip, fb.knee, fb.foot)} animated={animated} {...BODY} strokeOpacity={farOpacity} strokeWidth={4} />
-      <Path a={d2(a.shoulder, a.hip)} b={d2(b.shoulder, b.hip)} animated={animated} {...BODY} strokeWidth={6.5} />
-      <Path a={d3(a.hip, a.knee, a.foot)} b={d3(b.hip, b.knee, b.foot)} animated={animated} {...BODY} strokeWidth={4} />
-      <Path a={d3(a.shoulder, a.elbow, a.hand)} b={d3(b.shoulder, b.elbow, b.hand)} animated={animated} {...BODY} strokeWidth={4} />
+      {/* lado de longe */}
+      <Bone a={d2(fa.shoulder, fa.elbow)} b={d2(fb.shoulder, fb.elbow)} width={4} tone={h.upperArm} animated={animated} opacity={far} />
+      <Bone a={d2(fa.elbow, fa.hand)} b={d2(fb.elbow, fb.hand)} width={4} tone={h.forearm} animated={animated} opacity={far} />
+      <Bone a={d2(fa.hip, fa.knee)} b={d2(fb.hip, fb.knee)} width={4} tone={h.thigh} animated={animated} opacity={far} />
+      <Bone a={d2(fa.knee, fa.foot)} b={d2(fb.knee, fb.foot)} width={4} tone={h.shin} animated={animated} opacity={far} />
+      {/* tronco e lado de perto */}
+      <Bone a={d2(a.shoulder, a.hip)} b={d2(b.shoulder, b.hip)} width={6.5} tone={h.torso} animated={animated} />
+      <Bone a={d2(a.hip, a.knee)} b={d2(b.hip, b.knee)} width={4} tone={h.thigh} animated={animated} />
+      <Bone a={d2(a.knee, a.foot)} b={d2(b.knee, b.foot)} width={4} tone={h.shin} animated={animated} />
+      <Bone a={d2(a.shoulder, a.elbow)} b={d2(b.shoulder, b.elbow)} width={4} tone={h.upperArm} animated={animated} />
+      <Bone a={d2(a.elbow, a.hand)} b={d2(b.elbow, b.hand)} width={4} tone={h.forearm} animated={animated} />
+      {h.hip && <Dot a={a.hip} b={b.hip} r={4} animated={animated} fill={HIGHLIGHT[h.hip]} stroke="var(--text)" strokeWidth={1.2} />}
+      {h.shoulder && <Dot a={a.shoulder} b={b.shoulder} r={3.6} animated={animated} fill={HIGHLIGHT[h.shoulder]} stroke="var(--text)" strokeWidth={1.2} />}
       <Dot a={a.head} b={b.head} r={4.8} animated={animated} fill="var(--text)" />
       {(a.pads ?? []).map((p, i) => (
-        <Dot key={`p${i}`} a={p} b={(b.pads ?? [])[i]} r={2.8} animated={animated} fill="var(--lime)" />
+        <Dot key={`p${i}`} a={p} b={(b.pads ?? [])[i]} r={2.6} animated={animated} fill="var(--text-muted)" />
       ))}
       {(a.weights ?? []).map((p, i) => (
-        <Dot key={`w${i}`} a={p} b={(b.weights ?? [])[i]} r={3.6} animated={animated} fill="var(--lime)" stroke="var(--surface-2)" strokeWidth={1} />
+        <Dot key={`w${i}`} a={p} b={(b.weights ?? [])[i]} r={3.4} animated={animated} fill="var(--text-muted)" stroke="var(--surface-2)" strokeWidth={1} />
       ))}
       {(a.plates ?? []).map((p, i) => (
         <g key={`a${i}`}>
-          <Dot a={p} b={(b.plates ?? [])[i]} r={6.5} animated={animated} fill="var(--lime)" stroke="var(--surface-2)" strokeWidth={1.2} />
-          <Dot a={p} b={(b.plates ?? [])[i]} r={1.3} animated={animated} fill="var(--on-lime)" />
+          <Dot a={p} b={(b.plates ?? [])[i]} r={6.5} animated={animated} fill="var(--text-muted)" stroke="var(--surface-2)" strokeWidth={1.2} />
+          <Dot a={p} b={(b.plates ?? [])[i]} r={1.3} animated={animated} fill="var(--surface-2)" />
         </g>
       ))}
     </g>
@@ -162,11 +186,25 @@ function fittedViewBox(def: PictogramDef): string {
 }
 
 // Um quadro parado (início ou fim) ou a animação entre os dois; `fit` recorta para miniatura
-export function PictogramView({ def, frame = 0, animated = false, fit = false, className = '' }: { def: PictogramDef; frame?: 0 | 1; animated?: boolean; fit?: boolean; className?: string }) {
+export function PictogramView({
+  def,
+  frame = 0,
+  animated = false,
+  fit = false,
+  highlight,
+  className = '',
+}: {
+  def: PictogramDef
+  frame?: 0 | 1
+  animated?: boolean
+  fit?: boolean
+  highlight?: Highlight
+  className?: string
+}) {
   const reduced = usePrefersReducedMotion()
   return (
     <svg viewBox={fit ? fittedViewBox(def) : '0 -8 100 74'} className={`bg-surface-2 ${className}`} aria-hidden="true">
-      <Figure def={def} frame={frame} animated={animated && !reduced} />
+      <Figure def={def} frame={frame} animated={animated && !reduced} highlight={highlight} />
     </svg>
   )
 }
