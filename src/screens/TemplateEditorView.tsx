@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ExerciseFrames, ExerciseThumb } from '../components/ExerciseMedia'
 import Sheet from '../components/Sheet'
 import { Button, Card, Input, Label, SectionHeader, TextButton, modalityStyle } from '../components/ui'
 import type { Exercise, Modality } from '../lib/db'
@@ -33,22 +34,26 @@ function Stepper({ label, value, onChange, step, min, max, format }: {
   )
 }
 
-function ExerciseCard({ ex, index, count, onChange, onMove, onRemove }: {
+function ExerciseCard({ ex, index, count, onChange, onMove, onRemove, onShowFrames }: {
   ex: DraftExercise
   index: number
   count: number
   onChange: (ex: DraftExercise) => void
   onMove: (delta: -1 | 1) => void
   onRemove: () => void
+  onShowFrames: () => void
 }) {
   return (
     <Card className="space-y-3">
       <div className="flex items-start gap-3">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm bg-lime font-display text-lg font-bold text-on-lime">
-          {index + 1}
-        </span>
+        <button aria-label={`Ver execução: ${ex.name}`} onClick={onShowFrames} className="relative shrink-0">
+          <ExerciseThumb name={ex.name} muscleGroup={ex.muscleGroup} />
+          <span className="absolute -left-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-sm bg-lime font-display text-sm font-bold text-on-lime">
+            {index + 1}
+          </span>
+        </button>
         <div className="min-w-0 flex-1">
-          <p className="font-display text-xl font-bold uppercase leading-tight">{ex.name}</p>
+          <p className="pt-0.5 font-display text-xl font-bold uppercase leading-tight">{ex.name}</p>
           <p className="text-xs capitalize text-muted">{ex.muscleGroup}</p>
         </div>
         <div className="flex gap-1">
@@ -134,8 +139,9 @@ export function ExercisePicker({ catalog, onPick, onCreate }: {
         )}
         {list.map((e) => (
           <li key={e.id}>
-            <button className="flex w-full items-center justify-between py-3 text-left" onClick={() => onPick(e)}>
-              <span>
+            <button className="flex w-full items-center gap-3 py-2.5 text-left" onClick={() => onPick(e)}>
+              <ExerciseThumb name={e.name} muscleGroup={e.muscle_group} className="h-12 w-12" />
+              <span className="flex-1">
                 <span className="font-display text-lg font-bold uppercase">{e.name}</span>
                 <span className="block text-xs capitalize text-muted">
                   {[e.muscle_group, e.equipment].filter(Boolean).join(' · ')}
@@ -160,6 +166,7 @@ export default function TemplateEditorView({
   onArchive,
   onCreateExercise,
   initialPickerOpen = false,
+  initialFramesIndex,
 }: {
   draft: TemplateDraft
   catalog: Exercise[]
@@ -169,8 +176,10 @@ export default function TemplateEditorView({
   onArchive?: () => void
   onCreateExercise?: (name: string, muscleGroup: string) => Promise<Exercise>
   initialPickerOpen?: boolean
+  initialFramesIndex?: number
 }) {
   const [picker, setPicker] = useState(initialPickerOpen)
+  const [frames, setFrames] = useState<DraftExercise | null>(initialFramesIndex != null ? draft.exercises[initialFramesIndex] : null)
   const isStrength = draft.modality === 'strength'
 
   return (
@@ -228,6 +237,7 @@ export default function TemplateEditorView({
                 onChange={(next) => onChange({ ...draft, exercises: draft.exercises.map((e) => (e.key === ex.key ? next : e)) })}
                 onMove={(delta) => onChange(moveExercise(draft, i, delta))}
                 onRemove={() => onChange({ ...draft, exercises: draft.exercises.filter((e) => e.key !== ex.key) })}
+                onShowFrames={() => setFrames(ex)}
               />
             ))}
             {draft.exercises.length === 0 && (
@@ -250,6 +260,12 @@ export default function TemplateEditorView({
           </TextButton>
         )}
       </div>
+
+      {frames && (
+        <Sheet title={frames.name} onClose={() => setFrames(null)}>
+          <ExerciseFrames name={frames.name} />
+        </Sheet>
+      )}
 
       {picker && (
         <Sheet title="Adicionar Exercício" onClose={() => setPicker(false)}>

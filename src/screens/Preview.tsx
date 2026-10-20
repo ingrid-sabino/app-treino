@@ -12,6 +12,8 @@ import TrainView from './TrainView'
 import { buildTodayModel } from '../lib/today'
 import DesignSheet from './DesignSheet'
 import Login from './Login'
+import { PictogramView } from '../components/Pictogram'
+import { PICTOGRAMS } from '../lib/pictograms'
 import TodayView from './TodayView'
 
 // Prévias visuais com dados de exemplo (só em desenvolvimento): /design?tela=...
@@ -26,7 +28,28 @@ export default function Preview() {
       <TabBar />
     </MemoryRouter>
   )
-  if (tela === 'template' || tela === 'template-catalogo') return <TemplatePreview picker={tela === 'template-catalogo'} />
+  if (tela === 'template' || tela === 'template-catalogo' || tela === 'template-execucao')
+    return <TemplatePreview picker={tela === 'template-catalogo'} frames={tela === 'template-execucao' ? 1 : undefined} />
+  if (tela === 'pictogramas')
+    return (
+      <main className="mx-auto max-w-lg space-y-3 px-4 py-6">
+        <h1 className="text-5xl">Pictogramas</h1>
+        <p className="text-sm text-muted">Início e fim de cada Exercício. No app, a figura anima entre os dois.</p>
+        {Object.entries(PICTOGRAMS).map(([name, def]) => (
+          <section key={name} className="grid grid-cols-[1fr_1fr] items-end gap-2">
+            <h2 className="col-span-2 text-lg">{name}</h2>
+            <PictogramView def={def} frame={0} className="w-full rounded-md" />
+            <PictogramView def={def} frame={1} className="w-full rounded-md" />
+          </section>
+        ))}
+      </main>
+    )
+  if (tela === 'pictograma-animado')
+    return (
+      <main className="mx-auto max-w-lg px-4 py-6">
+        <PictogramView def={PICTOGRAMS['Agachamento livre']} animated className="w-full rounded-md" />
+      </main>
+    )
   if (tela === 'login') return <Login />
   if (tela === 'login-codigo') return <Login initialStep="code" initialEmail="ingridsabino000@gmail.com" initialCode="4821" />
   if (tela === 'treinar') {
@@ -67,7 +90,7 @@ export default function Preview() {
   return <DesignSheet />
 }
 
-function TemplatePreview({ picker }: { picker: boolean }) {
+function TemplatePreview({ picker, frames }: { picker: boolean; frames?: number }) {
   const [draft, setDraft] = useState(sampleTemplateDraft())
   return (
     <TemplateEditorView
@@ -79,6 +102,7 @@ function TemplatePreview({ picker }: { picker: boolean }) {
       onArchive={noop}
       onCreateExercise={async () => sampleCatalog()[0]}
       initialPickerOpen={picker}
+      initialFramesIndex={frames}
     />
   )
 }
