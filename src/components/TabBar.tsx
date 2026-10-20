@@ -3,9 +3,9 @@ import { NavLink } from 'react-router'
 const stroke = {
   fill: 'none',
   stroke: 'currentColor',
-  strokeWidth: 2,
-  strokeLinecap: 'round' as const,
-  strokeLinejoin: 'round' as const,
+  strokeWidth: 2.2,
+  strokeLinecap: 'square' as const,
+  strokeLinejoin: 'miter' as const,
 }
 
 const tabs = [
@@ -14,9 +14,8 @@ const tabs = [
     label: 'Hoje',
     icon: (
       <svg viewBox="0 0 24 24" className="h-6 w-6" {...stroke}>
-        <rect x="3" y="4.5" width="18" height="16" rx="4" />
-        <path d="M3 9.5h18M8 2.5v4M16 2.5v4" />
-        <circle cx="12" cy="15" r="1.6" fill="currentColor" />
+        <rect x="3.5" y="5" width="17" height="15" rx="1.5" />
+        <path d="M3.5 10h17M8 3v4M16 3v4" />
       </svg>
     ),
   },
@@ -55,7 +54,7 @@ export default function TabBar() {
   return (
     <nav
       aria-label="Navegação principal"
-      className="fixed inset-x-0 bottom-0 z-10 border-t border-line bg-paper/90 pb-[env(safe-area-inset-bottom)] backdrop-blur"
+      className="fixed inset-x-0 bottom-0 z-10 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)]"
     >
       <ul className="mx-auto grid max-w-lg grid-cols-4">
         {tabs.map((tab) => (
@@ -64,20 +63,16 @@ export default function TabBar() {
               to={tab.to}
               end={tab.to === '/'}
               className={({ isActive }) =>
-                `flex flex-col items-center gap-1 pb-2 pt-2.5 text-[11px] font-medium ${
+                `relative flex flex-col items-center gap-1 pb-2 pt-3 text-[11px] font-bold uppercase tracking-wider ${
                   isActive ? 'text-ink' : 'text-muted'
                 }`
               }
             >
               {({ isActive }) => (
                 <>
-                  <span
-                    className={`flex h-8 w-14 items-center justify-center rounded-full transition ${
-                      isActive ? 'bg-lime' : ''
-                    }`}
-                  >
-                    {tab.icon}
-                  </span>
+                  {/* Aba ativa: barra lima no topo */}
+                  <span className={`absolute inset-x-3 top-0 h-1 ${isActive ? 'bg-lime' : ''}`} />
+                  {tab.icon}
                   {tab.label}
                 </>
               )}
