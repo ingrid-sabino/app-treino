@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router'
 import TabBar from './components/TabBar'
 import { useAuth } from './lib/auth'
 import { useSync } from './lib/useSync'
@@ -7,6 +7,7 @@ import Login from './screens/Login'
 import Profile from './screens/Profile'
 import Today from './screens/Today'
 import Train from './screens/Train'
+import TemplateEditor from './screens/TemplateEditor'
 
 // Prévias visuais com dados de exemplo; o import dinâmico some do build de produção
 // Evolução carrega à parte (gráficos) para não pesar na abertura do app
@@ -31,6 +32,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Today />} />
         <Route path="/treinar" element={<Train />} />
+        <Route path="/treinar/template/:id" element={<TemplateEditor />} />
         <Route
           path="/evolucao"
           element={
@@ -42,7 +44,13 @@ export default function App() {
         <Route path="/perfil" element={<Profile />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      <TabBar />
+      <MainTabBar />
     </BrowserRouter>
   )
+}
+
+// Editores ocupam a tela inteira; nas abas principais a barra fica fixa no rodapé
+function MainTabBar() {
+  const { pathname } = useLocation()
+  return pathname.startsWith('/treinar/') ? null : <TabBar />
 }

@@ -52,7 +52,7 @@ export default function Today() {
       onSkip={target ? (seq) => skipOccurrence(target, seq, today) : undefined}
       onMove={target ? (seq, date) => moveOccurrence(target, seq, date) : undefined}
       onImport={() => navigate('/treinar')}
-      onCreateTemplate={() => navigate('/treinar')}
+      onCreateTemplate={() => navigate('/treinar/template/novo')}
     />
   )
 }

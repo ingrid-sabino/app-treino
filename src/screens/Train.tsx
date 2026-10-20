@@ -1,4 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks'
+import { useNavigate } from 'react-router'
 import { db, saveLocal } from '../lib/db'
 import { toLocalDate } from '../lib/schedule'
 import { buildTrainModel, type TrainData } from '../lib/train'
@@ -17,6 +18,7 @@ async function loadTrainData(): Promise<TrainData> {
 }
 
 export default function Train() {
+  const navigate = useNavigate()
   const data = useLiveQuery(loadTrainData, [])
   if (!data) return null
   const model = buildTrainModel(data, toLocalDate(new Date()))
@@ -26,6 +28,8 @@ export default function Train() {
     <TrainView
       model={model}
       // Dias de treino da Rotação (FR-34)
+      onCreateTemplate={() => navigate('/treinar/template/novo')}
+      onOpenTemplate={(id) => navigate(`/treinar/template/${id}`)}
       onSlotsChange={rotation ? (weekly_slots) => saveLocal('rotations', { ...rotation, weekly_slots }) : undefined}
     />
   )

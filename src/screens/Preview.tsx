@@ -1,6 +1,8 @@
 import { MemoryRouter } from 'react-router'
 import TabBar from '../components/TabBar'
-import { sampleProgressData, sampleTodayData } from '../lib/sample'
+import { sampleCatalog, sampleProgressData, sampleTemplateDraft, sampleTodayData } from '../lib/sample'
+import { useState } from 'react'
+import TemplateEditorView from './TemplateEditorView'
 import { buildProgressModel } from '../lib/progress'
 import { buildTrainModel } from '../lib/train'
 import { getTheme } from '../lib/theme'
@@ -24,6 +26,7 @@ export default function Preview() {
       <TabBar />
     </MemoryRouter>
   )
+  if (tela === 'template' || tela === 'template-catalogo') return <TemplatePreview picker={tela === 'template-catalogo'} />
   if (tela === 'login') return <Login />
   if (tela === 'login-codigo') return <Login initialStep="code" initialEmail="ingridsabino000@gmail.com" initialCode="4821" />
   if (tela === 'treinar') {
@@ -62,4 +65,20 @@ export default function Preview() {
     )
   }
   return <DesignSheet />
+}
+
+function TemplatePreview({ picker }: { picker: boolean }) {
+  const [draft, setDraft] = useState(sampleTemplateDraft())
+  return (
+    <TemplateEditorView
+      draft={draft}
+      catalog={sampleCatalog()}
+      onChange={setDraft}
+      onSave={noop}
+      onCancel={noop}
+      onArchive={noop}
+      onCreateExercise={async () => sampleCatalog()[0]}
+      initialPickerOpen={picker}
+    />
+  )
 }

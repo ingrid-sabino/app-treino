@@ -131,3 +131,61 @@ export function sampleProgressData(): import('./progress').ProgressData {
     })),
   }
 }
+
+// Catálogo inicial (o mesmo da migration 0001) para prévias e testes
+const CATALOG: [string, string, string][] = [
+  ['Supino reto', 'peito', 'barra'],
+  ['Supino inclinado com halteres', 'peito', 'halteres'],
+  ['Crucifixo na máquina', 'peito', 'máquina'],
+  ['Desenvolvimento militar', 'ombros', 'barra'],
+  ['Elevação lateral', 'ombros', 'halteres'],
+  ['Barra fixa', 'costas', 'peso corporal'],
+  ['Remada curvada', 'costas', 'barra'],
+  ['Puxada frontal', 'costas', 'polia'],
+  ['Remada baixa', 'costas', 'polia'],
+  ['Rosca direta', 'bíceps', 'barra'],
+  ['Rosca martelo', 'bíceps', 'halteres'],
+  ['Tríceps na polia', 'tríceps', 'polia'],
+  ['Tríceps francês', 'tríceps', 'halter'],
+  ['Agachamento livre', 'pernas', 'barra'],
+  ['Leg press 45°', 'pernas', 'máquina'],
+  ['Levantamento terra', 'posterior', 'barra'],
+  ['Stiff', 'posterior', 'barra'],
+  ['Cadeira extensora', 'quadríceps', 'máquina'],
+  ['Mesa flexora', 'posterior', 'máquina'],
+  ['Elevação pélvica', 'glúteos', 'barra'],
+  ['Panturrilha em pé', 'panturrilhas', 'máquina'],
+  ['Prancha', 'core', 'peso corporal'],
+]
+
+export function sampleCatalog(): import('./db').Exercise[] {
+  return CATALOG.map(([name, muscle_group, equipment], i) => ({
+    ...base,
+    id: `cat-${i}`,
+    owner_id: null,
+    name,
+    muscle_group,
+    equipment,
+    default_rest_seconds: 90,
+  }))
+}
+
+export function sampleTemplateDraft(): import('./templates').TemplateDraft {
+  const pick = (name: string, sets: number, reps: string, rest: number) => {
+    const ex = sampleCatalog().find((e) => e.name === name)!
+    return { key: `d-${ex.id}`, exerciseId: ex.id, name: ex.name, muscleGroup: ex.muscle_group, sets, reps, restSeconds: rest }
+  }
+  return {
+    id: 'tpl-b',
+    isNew: false,
+    name: 'Treino B',
+    modality: 'strength',
+    notes: 'Costas e bíceps',
+    exercises: [
+      pick('Barra fixa', 4, '6-8', 120),
+      pick('Remada curvada', 4, '8-10', 120),
+      pick('Puxada frontal', 3, '10-12', 90),
+      pick('Rosca direta', 3, '10-12', 60),
+    ],
+  }
+}

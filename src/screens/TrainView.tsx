@@ -13,6 +13,7 @@ interface Actions {
   onLogYoga?: () => void
   onSlotsChange?: (slots: number[]) => void
   onCreateTemplate?: () => void
+  onOpenTemplate?: (id: string) => void
   onImport?: () => void
 }
 
@@ -103,7 +104,8 @@ export default function TrainView({ model, ...actions }: { model: TrainModel } &
       <section className="space-y-2 pt-2">
         <SectionHeader title="Templates" />
         {templates.map((t) => (
-          <Card key={t.id} className="flex items-center gap-3 py-3">
+          <button key={t.id} className="block w-full text-left" onClick={() => actions.onOpenTemplate?.(t.id)} disabled={!actions.onOpenTemplate}>
+          <Card className="flex items-center gap-3 py-3">
             <div className="min-w-0 flex-1">
               <p className="truncate font-display text-xl font-bold uppercase">{t.name}</p>
               <p className="text-sm text-muted">
@@ -112,6 +114,7 @@ export default function TrainView({ model, ...actions }: { model: TrainModel } &
             </div>
             <ModalityTag modality={t.modality} />
           </Card>
+          </button>
         ))}
         <Button variant="secondary" size="md" onClick={actions.onCreateTemplate} disabled={!actions.onCreateTemplate}>
           Criar Template
