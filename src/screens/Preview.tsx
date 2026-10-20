@@ -12,6 +12,7 @@ import TrainView from './TrainView'
 import { buildTodayModel } from '../lib/today'
 import DesignSheet from './DesignSheet'
 import Login from './Login'
+import { MuscleMap } from '../components/MuscleMap'
 import { PictogramView } from '../components/Pictogram'
 import { PICTOGRAMS } from '../lib/pictograms'
 import TodayView from './TodayView'
@@ -48,6 +49,22 @@ export default function Preview() {
     return (
       <main className="mx-auto max-w-lg px-4 py-6">
         <PictogramView def={PICTOGRAMS['Agachamento livre']} animated className="w-full rounded-md" />
+      </main>
+    )
+  if (tela === 'musculos')
+    return (
+      <main className="mx-auto max-w-lg space-y-5 px-4 py-6">
+        <h1 className="text-5xl">Músculos</h1>
+        {[
+          { name: 'Supino reto', primary: ['chest'], secondary: ['triceps', 'front-deltoids'] },
+          { name: 'Agachamento livre', primary: ['quadriceps', 'gluteal'], secondary: ['hamstring', 'adductor', 'lower-back'] },
+          { name: 'Barra fixa', primary: ['upper-back'], secondary: ['biceps', 'back-deltoids', 'forearm'] },
+        ].map((e) => (
+          <section key={e.name}>
+            <h2 className="mb-2 text-2xl">{e.name}</h2>
+            <MuscleMap primary={e.primary as never} secondary={e.secondary as never} />
+          </section>
+        ))}
       </main>
     )
   if (tela === 'login') return <Login />
