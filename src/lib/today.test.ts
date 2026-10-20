@@ -13,8 +13,8 @@ describe('tela Hoje', () => {
 
   it('semana: A feito na segunda e o resto planejado na ordem da Rotação', () => {
     const model = buildTodayModel(sampleTodayData(), TUE, new Date('2026-10-20T12:00:00'))
-    expect(model.week[0].items).toEqual([{ modality: 'strength', status: 'done' }])
-    expect(model.week[2].items).toEqual([{ modality: 'run', status: 'planned' }]) // qua: corrida leve
+    expect(model.week[0].items).toEqual([{ modality: 'strength', status: 'done', seq: null, label: null }])
+    expect(model.week[2].items).toEqual([{ modality: 'run', status: 'planned', seq: 2, label: 'Corrida leve 5 km' }]) // qua
     expect(model.week[5].items.map((i) => i.modality)).toEqual(['run', 'yoga']) // sáb: 2 treinos
     expect(model.doneThisWeek).toBe(1)
     expect(model.plannedThisWeek).toBe(7)

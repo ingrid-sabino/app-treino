@@ -90,3 +90,44 @@ export function sampleTodayData(): TodayData {
     templateExercises,
   }
 }
+
+// Oito semanas de histórico: supino, agachamento e terra subindo de carga; peso semanal
+export function sampleProgressData(): import('./progress').ProgressData {
+  const exercises = [
+    { id: 'ex-supino', name: 'Supino reto', start: 50, step: 1.25 },
+    { id: 'ex-agach', name: 'Agachamento livre', start: 70, step: 2.5 },
+    { id: 'ex-terra', name: 'Levantamento terra', start: 80, step: 2.5 },
+  ]
+  const sessions: import('./db').Session[] = []
+  const sets: import('./db').WorkoutSet[] = []
+  for (let w = 0; w < 8; w++) {
+    const day = new Date(Date.UTC(2026, 7, 31 + w * 7, 13)) // segundas a partir de 31/08
+    const id = `hist-${w}`
+    sessions.push({ ...base, id, owner_id: owner, rotation_item_id: null, template_id: null, modality: 'strength', started_at: day.toISOString(), ended_at: new Date(day.getTime() + 3600e3).toISOString(), effort: 8, notes: null })
+    exercises.forEach((ex, n) => {
+      for (let s = 0; s < 3; s++) {
+        const wobble = w === 5 ? -ex.step : 0 // uma semana mais fraca, como na vida real
+        sets.push({ ...base, id: `${id}-${n}-${s}`, session_id: id, exercise_id: ex.id, exercise_position: n, set_position: s, weight_kg: ex.start + ex.step * w + wobble, reps: 5, rpe: null, status: 'done', completed_at: null })
+      }
+    })
+  }
+  const weights = [78.4, 78.1, 78.6, 78.9, 79.2, 79.0, 79.5, 79.8]
+  return {
+    sessions,
+    sets,
+    exercises: exercises.map((e) => ({ ...base, id: e.id, owner_id: null, name: e.name, muscle_group: '', equipment: null, default_rest_seconds: 120 })),
+    bodyLogs: weights.map((kg, w) => ({
+      ...base,
+      id: `body-${w}`,
+      owner_id: owner,
+      logged_on: new Date(Date.UTC(2026, 7, 31 + w * 7)).toISOString().slice(0, 10),
+      weight_kg: kg,
+      waist_cm: null,
+      chest_cm: null,
+      hip_cm: null,
+      arm_cm: null,
+      thigh_cm: null,
+      notes: null,
+    })),
+  }
+}

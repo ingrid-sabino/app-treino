@@ -1,8 +1,9 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useNavigate } from 'react-router'
-import { db, saveLocal } from '../lib/db'
+import { db } from '../lib/db'
 import { useAuth } from '../lib/auth'
-import { addDays, nextWorkout, startOfWeek, toLocalDate } from '../lib/schedule'
+import { moveOccurrence, skipOccurrence } from '../lib/rotationActions'
+import { addDays, startOfWeek, toLocalDate } from '../lib/schedule'
 import { buildTodayModel, type TodayData } from '../lib/today'
 import TodayView from './TodayView'
 
@@ -40,35 +41,16 @@ export default function Today() {
 
   const model = buildTodayModel(data, today)
 
-  // Pular (FR-2): a ocorrência sai da fila e o sucessor ocupa o lugar dela
-  async function skipNext() {
-    if (!data?.rotation || !session) return
-    const items = data.items.filter((i) => !i.deleted_at)
-    const next = nextWorkout({
-      itemCount: items.length,
-      weeklySlots: data.rotation.weekly_slots,
-      occurrences: data.occurrences.filter((o) => !o.deleted_at),
-      today,
-    })
-    if (!next) return
-    const existing = data.occurrences.find((o) => o.seq === next.seq)
-    await saveLocal('rotation_occurrences', {
-      id: existing?.id ?? crypto.randomUUID(),
-      owner_id: session.user.id,
-      rotation_id: data.rotation.id,
-      seq: next.seq,
-      planned_on: existing?.planned_on ?? null,
-      resolution: 'skipped',
-      resolved_on: next.date ?? today,
-      session_id: null,
-      deleted_at: null,
-    })
-  }
+  const target =
+    data.rotation && session
+      ? { ownerId: session.user.id, rotationId: data.rotation.id, occurrences: data.occurrences }
+      : null
 
   return (
     <TodayView
       model={model}
-      onSkip={model.next ? skipNext : undefined}
+      onSkip={target ? (seq) => skipOccurrence(target, seq, today) : undefined}
+      onMove={target ? (seq, date) => moveOccurrence(target, seq, date) : undefined}
       onImport={() => navigate('/treinar')}
       onCreateTemplate={() => navigate('/treinar')}
     />

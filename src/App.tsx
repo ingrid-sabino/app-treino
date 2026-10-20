@@ -4,11 +4,12 @@ import TabBar from './components/TabBar'
 import { useAuth } from './lib/auth'
 import Login from './screens/Login'
 import Profile from './screens/Profile'
-import Progress from './screens/Progress'
 import Today from './screens/Today'
 import Train from './screens/Train'
 
 // Prévias visuais com dados de exemplo; o import dinâmico some do build de produção
+// Evolução carrega à parte (gráficos) para não pesar na abertura do app
+const Progress = lazy(() => import('./screens/Progress'))
 const Preview = import.meta.env.DEV ? lazy(() => import('./screens/Preview')) : null
 
 export default function App() {
@@ -28,7 +29,14 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Today />} />
         <Route path="/treinar" element={<Train />} />
-        <Route path="/evolucao" element={<Progress />} />
+        <Route
+          path="/evolucao"
+          element={
+            <Suspense>
+              <Progress />
+            </Suspense>
+          }
+        />
         <Route path="/perfil" element={<Profile />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

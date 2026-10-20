@@ -46,10 +46,15 @@ export function buildTodayModel(data: TodayData, today: string, now = new Date()
     const date = addDays(monday, i)
     const done = doneSessions
       .filter((s) => toLocalDate(new Date(s.started_at)) === date) // dia no fuso da pessoa
-      .map((s) => ({ modality: s.modality, status: 'done' as const }))
+      .map((s) => ({ modality: s.modality, status: 'done' as const, seq: null, label: null }))
     const planned = plan
       .filter((p) => p.date === date)
-      .map((p) => ({ modality: items[p.itemIndex].modality, status: 'planned' as const }))
+      .map((p) => ({
+        modality: items[p.itemIndex].modality,
+        status: 'planned' as const,
+        seq: p.seq,
+        label: items[p.itemIndex].label,
+      }))
     return { date, weekday, dayNumber: Number(date.slice(8)), isToday: date === today, items: [...done, ...planned] }
   })
 
@@ -67,6 +72,7 @@ export function buildTodayModel(data: TodayData, today: string, now = new Date()
       0,
     )
     nextModel = {
+      seq: next.seq,
       label: item.label,
       notes: template?.notes ?? null,
       modality: item.modality,
@@ -94,6 +100,7 @@ export function buildTodayModel(data: TodayData, today: string, now = new Date()
     .reduce((sum, s) => sum + (s.weight_kg ?? 0) * (s.reps ?? 0), 0)
 
   return {
+    today,
     dateLabel: now.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }),
     hasRotation: Boolean(data.rotation),
     week,

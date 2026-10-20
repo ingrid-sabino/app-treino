@@ -1,17 +1,21 @@
-import { Card } from '../components/ui'
-import Screen from '../components/Screen'
+import { useLiveQuery } from 'dexie-react-hooks'
+import { db } from '../lib/db'
+import { buildProgressModel, type ProgressData } from '../lib/progress'
+import { toLocalDate } from '../lib/schedule'
+import ProgressView from './ProgressView'
+
+async function loadProgressData(): Promise<ProgressData> {
+  const sessions = await db.sessions.toArray()
+  return {
+    sessions,
+    sets: await db.sets.where('session_id').anyOf(sessions.map((s) => s.id)).toArray(),
+    exercises: await db.exercises.toArray(),
+    bodyLogs: await db.body_logs.toArray(),
+  }
+}
 
 export default function Progress() {
-  return (
-    <Screen title="Evolução">
-      <Card>
-        <h2 className="text-2xl uppercase">Força</h2>
-        <p className="mt-2 text-sm text-muted">A curva de 1RM estimado por Exercício aparece depois das primeiras Sessões.</p>
-      </Card>
-      <Card>
-        <h2 className="text-2xl uppercase">Corpo</h2>
-        <p className="mt-2 text-sm text-muted">Peso, medidas e Fotos de progresso do Registro corporal.</p>
-      </Card>
-    </Screen>
-  )
+  const data = useLiveQuery(loadProgressData, [])
+  if (!data) return null
+  return <ProgressView model={buildProgressModel(data, toLocalDate(new Date()))} />
 }

@@ -1,17 +1,28 @@
+import { useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
+import Sheet from '../components/Sheet'
 import { Button, Card, Label, ModalityTag, SectionHeader, Stat, modalityStyle } from '../components/ui'
 import type { Modality } from '../lib/db'
+import { addDays, weekdayIndex } from '../lib/schedule'
 
-// Tela Hoje, só apresentação (os dados vêm de useTodayModel em Today.tsx).
+// Tela Hoje, só apresentação (os dados vêm de buildTodayModel em lib/today.ts).
+
+export interface WeekDayItem {
+  modality: Modality
+  status: 'done' | 'planned'
+  seq: number | null // posição na fila da Rotação (só nos planejados)
+  label: string | null
+}
 
 export interface WeekDayModel {
   date: string
   weekday: string // seg, ter...
   dayNumber: number
   isToday: boolean
-  items: { modality: Modality; status: 'done' | 'planned' }[]
+  items: WeekDayItem[]
 }
 
 export interface NextWorkoutModel {
+  seq: number
   label: string
   notes: string | null
   modality: Modality
@@ -29,6 +40,7 @@ export interface UpcomingModel {
 }
 
 export interface TodayModel {
+  today: string
   dateLabel: string
   hasRotation: boolean
   week: WeekDayModel[]
@@ -41,11 +53,13 @@ export interface TodayModel {
 
 interface Actions {
   onStart?: () => void
-  onSkip?: () => void
-  onMove?: () => void
+  onSkip?: (seq: number) => void // FR-2
+  onMove?: (seq: number, date: string) => void // FR-35
   onImport?: () => void
   onCreateTemplate?: () => void
 }
+
+const WEEKDAYS = ['seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom']
 
 const barColor: Record<Modality, string> = {
   strength: 'bg-lime',
@@ -63,7 +77,66 @@ function Check() {
   )
 }
 
-function WeekStrip({ week, done, planned }: { week: WeekDayModel[]; done: number; planned: number }) {
+interface Drag {
+  seq: number
+  label: string
+  modality: Modality
+  from: string
+  x: number
+  y: number
+  over: string | null
+  moved: boolean
+}
+
+// Semana com toque (abre as ações do dia) e arrastar (muda o treino de dia)
+function WeekStrip({
+  week,
+  today,
+  done,
+  planned,
+  onOpenDay,
+  onMove,
+}: {
+  week: WeekDayModel[]
+  today: string
+  done: number
+  planned: number
+  onOpenDay: (day: WeekDayModel) => void
+  onMove?: (seq: number, date: string) => void
+}) {
+  const [drag, setDrag] = useState<Drag | null>(null)
+  const start = useRef<{ x: number; y: number } | null>(null)
+
+  function dateAt(x: number, y: number): string | null {
+    const el = document.elementFromPoint(x, y)?.closest<HTMLElement>('[data-date]')
+    return el?.dataset.date ?? null
+  }
+
+  function onPointerDown(e: ReactPointerEvent, day: WeekDayModel) {
+    const item = day.items.find((i) => i.status === 'planned')
+    start.current = { x: e.clientX, y: e.clientY }
+    if (!item || item.seq == null || !onMove) return
+    e.currentTarget.setPointerCapture(e.pointerId)
+    setDrag({ seq: item.seq, label: item.label ?? '', modality: item.modality, from: day.date, x: e.clientX, y: e.clientY, over: day.date, moved: false })
+  }
+
+  function onPointerMove(e: ReactPointerEvent) {
+    if (!drag || !start.current) return
+    const moved = drag.moved || Math.hypot(e.clientX - start.current.x, e.clientY - start.current.y) > 6
+    setDrag({ ...drag, x: e.clientX, y: e.clientY, over: dateAt(e.clientX, e.clientY), moved })
+  }
+
+  function onPointerUp(day: WeekDayModel) {
+    if (drag?.moved) {
+      // Só dá para mover para hoje ou depois
+      if (drag.over && drag.over !== drag.from && drag.over >= today) onMove?.(drag.seq, drag.over)
+    } else if (day.items.some((i) => i.status === 'planned')) {
+      onOpenDay(day)
+    }
+    setDrag(null)
+    start.current = null
+  }
+
   return (
     <Card>
       <div className="flex items-baseline justify-between">
@@ -77,6 +150,9 @@ function WeekStrip({ week, done, planned }: { week: WeekDayModel[]; done: number
       <ol className="mt-3 grid grid-cols-7 gap-1.5">
         {week.map((day) => {
           const doneItem = day.items.find((i) => i.status === 'done')
+          const plannedItems = day.items.filter((i) => i.status === 'planned')
+          const isDropTarget = drag?.moved && drag.over === day.date && day.date !== drag.from
+          const canDrop = day.date >= today
           const tile = doneItem
             ? modalityStyle[doneItem.modality].className
             : day.isToday
@@ -88,15 +164,22 @@ function WeekStrip({ week, done, planned }: { week: WeekDayModel[]; done: number
                 {day.weekday}
               </span>
               <div
-                className={`relative flex h-12 w-full items-center justify-center overflow-hidden rounded-md font-display text-xl font-bold ${tile} ${
+                data-date={day.date}
+                onPointerDown={(e) => onPointerDown(e, day)}
+                onPointerMove={onPointerMove}
+                onPointerUp={() => onPointerUp(day)}
+                onPointerCancel={() => setDrag(null)}
+                className={`relative flex h-12 w-full touch-none select-none items-center justify-center overflow-hidden rounded-md font-display text-xl font-bold transition ${tile} ${
                   day.isToday ? 'ring-2 ring-ink ring-inset' : ''
+                } ${isDropTarget ? (canDrop ? 'scale-105 ring-2 ring-lime' : 'opacity-40') : ''} ${
+                  drag?.moved && drag.from === day.date ? 'opacity-40' : ''
                 }`}
               >
                 {doneItem ? <Check /> : day.dayNumber}
                 {/* Treinos planejados: uma faixa por treino, na cor da Modalidade */}
-                {!doneItem && day.items.length > 0 && (
+                {!doneItem && plannedItems.length > 0 && (
                   <div className="absolute inset-x-0 bottom-0 flex h-1.5 gap-px">
-                    {day.items.map((item, i) => (
+                    {plannedItems.map((item, i) => (
                       <span key={i} className={`flex-1 ${barColor[item.modality]}`} />
                     ))}
                   </div>
@@ -106,11 +189,54 @@ function WeekStrip({ week, done, planned }: { week: WeekDayModel[]; done: number
           )
         })}
       </ol>
+      {onMove && <p className="mt-3 text-xs text-muted">Toque num dia para pular ou mudar o treino. Arraste para trocar de dia.</p>}
+
+      {/* Treino sendo arrastado acompanha o dedo */}
+      {drag?.moved && (
+        <div
+          className={`pointer-events-none fixed z-40 -translate-x-1/2 -translate-y-[130%] rounded-md px-3 py-2 font-display text-lg font-bold uppercase shadow-lg ${modalityStyle[drag.modality].className}`}
+          style={{ left: drag.x, top: drag.y }}
+        >
+          {drag.label}
+        </div>
+      )}
     </Card>
   )
 }
 
-function NextWorkoutCard({ next, onStart, onSkip, onMove }: { next: NextWorkoutModel } & Actions) {
+// Escolha de dia para mudar um treino (FR-35): esta semana e a que vem, de segunda a domingo
+function DayPicker({ today, current, onPick }: { today: string; current: string | null; onPick: (date: string) => void }) {
+  const monday = addDays(today, -weekdayIndex(today))
+  const weeks = [0, 7].map((offset) => Array.from({ length: 7 }, (_, i) => addDays(monday, offset + i)))
+  return (
+    <div className="space-y-3">
+      {weeks.map((days, w) => (
+        <div key={w}>
+          <Label className="mb-1.5 text-muted">{w === 0 ? 'Esta semana' : 'Semana que vem'}</Label>
+          <div className="grid grid-cols-7 gap-1.5">
+            {days.map((d) => (
+              <button
+                key={d}
+                onClick={() => onPick(d)}
+                disabled={d < today || d === current}
+                className={`flex h-14 flex-col items-center justify-center rounded-md border font-display font-bold uppercase disabled:opacity-25 ${
+                  d === today ? 'border-ink bg-lime text-on-lime' : 'border-line bg-surface-2 text-ink'
+                }`}
+              >
+                <span className="text-[11px]">{WEEKDAYS[weekdayIndex(d)]}</span>
+                <span className="text-xl leading-none">{Number(d.slice(8))}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+type SheetState = { kind: 'day'; day: WeekDayModel } | { kind: 'move'; seq: number; label: string; from: string | null } | null
+
+function NextWorkoutCard({ next, onStart, onSkip, onMoveClick }: { next: NextWorkoutModel; onStart?: () => void; onSkip?: () => void; onMoveClick?: () => void }) {
   const stats = [
     next.exerciseCount != null && { label: 'Exercícios', value: String(next.exerciseCount) },
     next.setCount != null && { label: 'Séries', value: String(next.setCount) },
@@ -139,7 +265,7 @@ function NextWorkoutCard({ next, onStart, onSkip, onMove }: { next: NextWorkoutM
         <Button variant="dark" size="md" className="border border-white/20" onClick={onSkip} disabled={!onSkip}>
           Pular
         </Button>
-        <Button variant="dark" size="md" className="border border-white/20" onClick={onMove} disabled={!onMove}>
+        <Button variant="dark" size="md" className="border border-white/20" onClick={onMoveClick} disabled={!onMoveClick}>
           Mudar dia
         </Button>
       </div>
@@ -165,7 +291,15 @@ function EmptyRotation({ onImport, onCreateTemplate }: Actions) {
   )
 }
 
-export default function TodayView({ model, ...actions }: { model: TodayModel } & Actions) {
+export default function TodayView({
+  model,
+  initialSheet = null,
+  ...actions
+}: { model: TodayModel; initialSheet?: SheetState } & Actions) {
+  const [sheet, setSheet] = useState<SheetState>(initialSheet)
+  const { next } = model
+  const nextDate = model.week.find((d) => d.items.some((i) => i.seq === next?.seq))?.date ?? null
+
   return (
     <main className="mx-auto max-w-lg space-y-4 px-4 pb-32 pt-[max(1.25rem,env(safe-area-inset-top))]">
       <header>
@@ -173,10 +307,22 @@ export default function TodayView({ model, ...actions }: { model: TodayModel } &
         <h1 className="mt-1 text-6xl">Hoje</h1>
       </header>
 
-      <WeekStrip week={model.week} done={model.doneThisWeek} planned={model.plannedThisWeek} />
+      <WeekStrip
+        week={model.week}
+        today={model.today}
+        done={model.doneThisWeek}
+        planned={model.plannedThisWeek}
+        onOpenDay={(day) => setSheet({ kind: 'day', day })}
+        onMove={actions.onMove}
+      />
 
-      {model.next ? (
-        <NextWorkoutCard next={model.next} {...actions} />
+      {next ? (
+        <NextWorkoutCard
+          next={next}
+          onStart={actions.onStart}
+          onSkip={actions.onSkip && (() => actions.onSkip!(next.seq))}
+          onMoveClick={actions.onMove && (() => setSheet({ kind: 'move', seq: next.seq, label: next.label, from: nextDate }))}
+        />
       ) : (
         <EmptyRotation {...actions} />
       )}
@@ -206,6 +352,58 @@ export default function TodayView({ model, ...actions }: { model: TodayModel } &
             <Stat label="Treinos feitos" value={`${model.doneThisWeek}/${model.plannedThisWeek}`} />
           </Card>
         </section>
+      )}
+
+      {sheet?.kind === 'day' && (
+        <Sheet title={`${sheet.day.weekday} ${sheet.day.dayNumber}`} onClose={() => setSheet(null)}>
+          <div className="space-y-3">
+            {sheet.day.items
+              .filter((i) => i.status === 'planned' && i.seq != null)
+              .map((item) => (
+                <div key={item.seq} className="rounded-lg border border-line p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-display text-2xl font-bold uppercase">{item.label}</p>
+                    <ModalityTag modality={item.modality} />
+                  </div>
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    <Button
+                      variant="secondary"
+                      size="md"
+                      onClick={() => {
+                        actions.onSkip?.(item.seq!)
+                        setSheet(null)
+                      }}
+                    >
+                      Pular
+                    </Button>
+                    <Button
+                      variant="dark"
+                      size="md"
+                      onClick={() => setSheet({ kind: 'move', seq: item.seq!, label: item.label ?? '', from: sheet.day.date })}
+                    >
+                      Mudar dia
+                    </Button>
+                  </div>
+                </div>
+              ))}
+          </div>
+        </Sheet>
+      )}
+
+      {sheet?.kind === 'move' && (
+        <Sheet title="Mudar dia" onClose={() => setSheet(null)}>
+          <p className="mb-3 text-sm text-muted">
+            Para quando vai o <strong className="text-ink">{sheet.label}</strong>? Só ele muda; os outros treinos ficam onde estão.
+          </p>
+          <DayPicker
+            today={model.today}
+            current={sheet.from}
+            onPick={(date) => {
+              actions.onMove?.(sheet.seq, date)
+              setSheet(null)
+            }}
+          />
+        </Sheet>
       )}
     </main>
   )

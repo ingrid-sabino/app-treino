@@ -25,6 +25,7 @@
   --on-lilac: #14121f;
   --lilac-strong: #5b43c9; /* lilás legível sobre fundo claro */
   --danger: #c2410c;
+  --chart-line: #5b43c9; /* série dos gráficos, validada contra a superfície clara */
   color-scheme: light;
 }
 
@@ -39,6 +40,7 @@
   --on-inverse: #f6f5ef;
   --lilac-strong: #c9bbfa;
   --danger: #fb923c;
+  --chart-line: #8f74ef; /* validada contra a superfície escura */
   color-scheme: dark;
 }
 
@@ -60,6 +62,7 @@
   --color-on-lilac: var(--on-lilac);
   --color-lilac-strong: var(--lilac-strong);
   --color-danger: var(--danger);
+  --color-chart-line: var(--chart-line);
 
   /* Cantos: retos com raio pequeno, nunca pílula */
   --radius-sm: 4px;

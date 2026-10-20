@@ -97,7 +97,7 @@ export const modalityStyle: Record<Modality, { label: string; className: string 
   strength: { label: 'Musculação', className: 'bg-lime text-on-lime' },
   run: { label: 'Corrida', className: 'bg-lilac text-on-lilac' },
   ride: { label: 'Ciclismo', className: 'bg-lilac text-on-lilac' },
-  yoga: { label: 'Yoga', className: 'bg-inverse text-on-inverse' },
+  yoga: { label: 'Yoga', className: 'bg-inverse text-on-inverse ring-1 ring-inset ring-white/40' },
   other: { label: 'Outra', className: 'bg-surface-2 text-ink' },
 }
 
