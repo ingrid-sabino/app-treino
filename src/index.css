@@ -1,27 +1,73 @@
 @import 'tailwindcss';
 @import '@fontsource-variable/inter';
 @import '@fontsource/barlow-condensed/500.css';
+@import '@fontsource/barlow-condensed/600.css';
 @import '@fontsource/barlow-condensed/700.css';
+@import '@fontsource/barlow-condensed/800.css';
 
-/* Identidade visual do Tönus: off-white calmo, acentos lima e lilás,
-   cantos bem arredondados. Barlow Condensed nos títulos e números; Inter no resto. */
-@theme {
+/* Identidade visual do Tönus: as cores do ícone são as cores principais.
+   Lima = ação e musculação; tinta = blocos de destaque e texto; lilás = cardio e recordes.
+   Base clara de contraste forte, com tema escuro opcional (data-theme="dark").
+   Cantos retos com raio pequeno. Barlow Condensed em títulos e números; Inter no resto. */
+
+:root {
+  --bg: #f3f2ec;
+  --surface: #ffffff;
+  --surface-2: #e9e7df;
+  --line: #d9d6cc;
+  --text: #14121f;
+  --text-muted: #5c5969;
+  --inverse: #1e1b2e;
+  --on-inverse: #f6f5ef;
+  --lime: #d4f26a;
+  --on-lime: #14121f;
+  --lilac: #b9a7f5;
+  --on-lilac: #14121f;
+  --lilac-strong: #5b43c9; /* lilás legível sobre fundo claro */
+  --danger: #c2410c;
+  --chart-line: #5b43c9; /* série dos gráficos, validada contra a superfície clara */
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --bg: #0f0e15;
+  --surface: #1a1824;
+  --surface-2: #24212f;
+  --line: #34303f;
+  --text: #f6f5ef;
+  --text-muted: #a7a3b4;
+  --inverse: #2b2740;
+  --on-inverse: #f6f5ef;
+  --lilac-strong: #c9bbfa;
+  --danger: #fb923c;
+  --chart-line: #8f74ef; /* validada contra a superfície escura */
+  color-scheme: dark;
+}
+
+@theme inline {
   --font-sans: 'Inter Variable', system-ui, sans-serif;
   --font-display: 'Barlow Condensed', 'Inter Variable', sans-serif;
 
-  --color-paper: #f7f5f0; /* fundo */
-  --color-card: #ffffff;
-  --color-line: #e7e3da;
-  --color-ink: #1e1b2e; /* texto principal */
-  --color-muted: #6b6879; /* texto secundário */
-  --color-lime: #d4f26a; /* ação principal (texto em ink) */
-  --color-lime-soft: #eef9c8;
-  --color-lilac: #b9a7f5; /* destaques e recordes */
-  --color-lilac-soft: #ece6fd;
-  --color-lilac-ink: #5b43c9; /* lilás legível sobre fundo claro */
-  --color-danger: #c2410c;
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-ink: var(--text);
+  --color-muted: var(--text-muted);
+  --color-inverse: var(--inverse);
+  --color-on-inverse: var(--on-inverse);
+  --color-lime: var(--lime);
+  --color-on-lime: var(--on-lime);
+  --color-lilac: var(--lilac);
+  --color-on-lilac: var(--on-lilac);
+  --color-lilac-strong: var(--lilac-strong);
+  --color-danger: var(--danger);
+  --color-chart-line: var(--chart-line);
 
-  --radius-card: 1.5rem;
+  /* Cantos: retos com raio pequeno, nunca pílula */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
 }
 
 @layer base {
@@ -30,12 +76,12 @@
     -webkit-tap-highlight-color: transparent;
   }
   body {
-    @apply bg-paper font-sans text-ink antialiased;
+    @apply bg-bg font-sans text-ink antialiased;
     overscroll-behavior-y: none;
   }
   h1,
   h2,
   h3 {
-    @apply font-display font-bold tracking-tight;
+    @apply font-display font-bold uppercase leading-none tracking-tight;
   }
 }

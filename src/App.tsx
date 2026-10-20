@@ -1,14 +1,30 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
+import { lazy, Suspense } from 'react'
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router'
 import TabBar from './components/TabBar'
 import { useAuth } from './lib/auth'
+import { useSync } from './lib/useSync'
 import Login from './screens/Login'
 import Profile from './screens/Profile'
-import Progress from './screens/Progress'
 import Today from './screens/Today'
 import Train from './screens/Train'
+import TemplateEditor from './screens/TemplateEditor'
+import RotationEditor from './screens/RotationEditor'
+
+// Prévias visuais com dados de exemplo; o import dinâmico some do build de produção
+// Evolução carrega à parte (gráficos) para não pesar na abertura do app
+const Progress = lazy(() => import('./screens/Progress'))
+const Preview = import.meta.env.DEV ? lazy(() => import('./screens/Preview')) : null
 
 export default function App() {
   const { session, loading } = useAuth()
+  useSync(session?.user.id)
+  // Folha de componentes para revisar a identidade visual; não vai para produção
+  if (Preview && window.location.pathname === '/design')
+    return (
+      <Suspense>
+        <Preview />
+      </Suspense>
+    )
   if (loading) return null
   if (!session) return <Login />
 
@@ -17,11 +33,26 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Today />} />
         <Route path="/treinar" element={<Train />} />
-        <Route path="/evolucao" element={<Progress />} />
+        <Route path="/treinar/template/:id" element={<TemplateEditor />} />
+        <Route path="/treinar/rotacao/:id" element={<RotationEditor />} />
+        <Route
+          path="/evolucao"
+          element={
+            <Suspense>
+              <Progress />
+            </Suspense>
+          }
+        />
         <Route path="/perfil" element={<Profile />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      <TabBar />
+      <MainTabBar />
     </BrowserRouter>
   )
+}
+
+// Editores ocupam a tela inteira; nas abas principais a barra fica fixa no rodapé
+function MainTabBar() {
+  const { pathname } = useLocation()
+  return pathname.startsWith('/treinar/') ? null : <TabBar />
 }

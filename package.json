@@ -16,8 +16,10 @@
     "dexie": "^4.4.6",
     "dexie-react-hooks": "^4.4.0",
     "react": "^19.3.1",
+    "react-body-highlighter": "^2.0.5",
     "react-dom": "^19.3.1",
-    "react-router": "^8.4.0"
+    "react-router": "^8.4.0",
+    "recharts": "^3.10.1"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",

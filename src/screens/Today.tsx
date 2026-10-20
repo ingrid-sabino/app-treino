@@ -1,38 +1,58 @@
-import { Card } from '../components/ui'
-import Screen from '../components/Screen'
+import { useLiveQuery } from 'dexie-react-hooks'
+import { useNavigate } from 'react-router'
+import { db } from '../lib/db'
+import { useAuth } from '../lib/auth'
+import { moveOccurrence, skipOccurrence } from '../lib/rotationActions'
+import { addDays, startOfWeek, toLocalDate } from '../lib/schedule'
+import { buildTodayModel, type TodayData } from '../lib/today'
+import TodayView from './TodayView'
 
-const weekdays = ['seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom']
+async function loadTodayData(today: string): Promise<TodayData> {
+  const rotation = (await db.rotations.filter((r) => r.is_active && !r.deleted_at).first()) ?? null
+  const monday = startOfWeek(today)
+  // Um dia de folga antes e depois cobre a diferença de fuso entre UTC e o horário local
+  const weekSessions = await db.sessions
+    .where('started_at')
+    .between(addDays(monday, -1), addDays(monday, 8))
+    .toArray()
+  const weekSets = await db.sets.where('session_id').anyOf(weekSessions.map((s) => s.id)).toArray()
+  if (!rotation) {
+    return { rotation, items: [], occurrences: [], weekSessions, weekSets, templates: [], templateExercises: [] }
+  }
+  const items = await db.rotation_items.where('rotation_id').equals(rotation.id).toArray()
+  const templateIds = items.map((i) => i.template_id).filter((id): id is string => Boolean(id))
+  return {
+    rotation,
+    items,
+    occurrences: await db.rotation_occurrences.where('rotation_id').equals(rotation.id).toArray(),
+    weekSessions,
+    weekSets,
+    templates: await db.templates.bulkGet(templateIds).then((t) => t.filter((x) => x != null)),
+    templateExercises: await db.template_exercises.where('template_id').anyOf(templateIds).toArray(),
+  }
+}
 
 export default function Today() {
-  const today = new Date()
-  const kicker = today.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })
-  const todayIndex = (today.getDay() + 6) % 7 // semana começa na segunda (FR-3)
+  const navigate = useNavigate()
+  const { session } = useAuth()
+  const today = toLocalDate(new Date())
+  const data = useLiveQuery(() => loadTodayData(today), [today])
+  if (!data) return null
+
+  const model = buildTodayModel(data, today)
+
+  const target =
+    data.rotation && session
+      ? { ownerId: session.user.id, rotationId: data.rotation.id, occurrences: data.occurrences }
+      : null
 
   return (
-    <Screen title="Hoje" kicker={kicker}>
-      <Card className="bg-lime-soft">
-        <p className="text-sm font-medium text-muted">Próximo treino</p>
-        <h2 className="mt-1 text-3xl uppercase">Nenhuma Rotação ativa</h2>
-        <p className="mt-2 text-sm text-muted">
-          Crie seus Templates e uma Rotação, ou importe um Programa. O Próximo treino aparece aqui.
-        </p>
-      </Card>
-
-      <Card>
-        <p className="text-sm font-medium text-muted">Semana</p>
-        <ol className="mt-3 grid grid-cols-7 gap-1 text-center">
-          {weekdays.map((day, i) => (
-            <li key={day} className="flex flex-col items-center gap-2">
-              <span className={`text-xs ${i === todayIndex ? 'font-semibold text-ink' : 'text-muted'}`}>{day}</span>
-              <span
-                className={`h-9 w-9 rounded-full border ${
-                  i === todayIndex ? 'border-lilac bg-lilac-soft' : 'border-line'
-                }`}
-              />
-            </li>
-          ))}
-        </ol>
-      </Card>
-    </Screen>
+    <TodayView
+      model={model}
+      onSkip={target ? (seq) => skipOccurrence(target, seq, today) : undefined}
+      onMove={target ? (seq, date) => moveOccurrence(target, seq, date) : undefined}
+      onImport={() => navigate('/treinar')}
+      onCreateTemplate={() => navigate('/treinar/template/novo')}
+    />
   )
 }

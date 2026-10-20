@@ -1,18 +1,20 @@
-import { Card, TextButton } from '../components/ui'
-import Screen from '../components/Screen'
+import { useState } from 'react'
 import { signOut, useAuth } from '../lib/auth'
+import { getTheme, setTheme, type Theme } from '../lib/theme'
+import ProfileView from './ProfileView'
 
 export default function Profile() {
   const { session } = useAuth()
+  const [theme, setThemeState] = useState<Theme>(getTheme())
   return (
-    <Screen title="Perfil">
-      <Card>
-        <p className="text-sm font-medium text-muted">Conta</p>
-        <p className="mt-1 break-all">{session?.user.email}</p>
-        <TextButton className="mt-4" onClick={signOut}>
-          Sair
-        </TextButton>
-      </Card>
-    </Screen>
+    <ProfileView
+      email={session?.user.email ?? ''}
+      theme={theme}
+      onThemeChange={(t) => {
+        setTheme(t)
+        setThemeState(t)
+      }}
+      onSignOut={signOut}
+    />
   )
 }
