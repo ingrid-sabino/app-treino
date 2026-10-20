@@ -173,6 +173,8 @@ export class TonusDB extends Dexie {
 
 export const db = new TonusDB()
 
+export const LOCAL_WRITE_EVENT = 'tonus:local-write'
+
 interface RowByTable {
   exercises: Exercise
   templates: Template
@@ -200,4 +202,6 @@ export async function saveLocal<T extends SyncedTable>(
     await (db[table] as Dexie.Table).put(withStamp)
     await db.outbox.add({ table, row_id: rowId, queued_at: now })
   })
+  // Avisa a sincronização de que há algo novo na fila
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event(LOCAL_WRITE_EVENT))
 }

@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
 import TabBar from './components/TabBar'
 import { useAuth } from './lib/auth'
+import { useSync } from './lib/useSync'
 import Login from './screens/Login'
 import Profile from './screens/Profile'
 import Today from './screens/Today'
@@ -14,6 +15,7 @@ const Preview = import.meta.env.DEV ? lazy(() => import('./screens/Preview')) : 
 
 export default function App() {
   const { session, loading } = useAuth()
+  useSync(session?.user.id)
   // Folha de componentes para revisar a identidade visual; não vai para produção
   if (Preview && window.location.pathname === '/design')
     return (
