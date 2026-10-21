@@ -1,6 +1,9 @@
 import { MemoryRouter } from 'react-router'
 import TabBar from '../components/TabBar'
-import { sampleCatalog, sampleProgressData, sampleTemplateDraft, sampleTodayData, sampleTodayTwoToday } from '../lib/sample'
+import { sampleCatalog, sampleProgressData, sampleSessionData, sampleSessionSummary, sampleTemplateDraft, sampleTodayData, sampleTodayTwoToday } from '../lib/sample'
+import { buildSessionView } from '../lib/session'
+import SessionView from './SessionView'
+import SessionSummaryView from './SessionSummaryView'
 import { useState } from 'react'
 import TemplateEditorView from './TemplateEditorView'
 import RotationEditorView from './RotationEditorView'
@@ -71,6 +74,21 @@ export default function Preview() {
       </main>
     )
   if (tela === 'rotacao' || tela === 'rotacao-adicionar') return <RotationPreview adding={tela === 'rotacao-adicionar'} />
+  if (tela === 'sessao' || tela === 'sessao-concluir' || tela === 'sessao-serie') {
+    const nowMs = new Date('2026-10-21T10:32:14').getTime()
+    const model = buildSessionView(sampleSessionData(nowMs))
+    const actions = { onChangeSet: noop, onToggleDone: noop, onSkipSet: noop, onRemoveSet: noop, onAddSet: noop, onAddExercise: noop, onRemoveExercise: noop, onMoveExercise: noop, onFinish: noop, onDiscard: noop, onMinimize: noop }
+    const menu = tela === 'sessao-concluir' ? ({ kind: 'finish' } as const) : tela === 'sessao-serie' ? ({ kind: 'set', set: model.exercises[1].sets[0] } as const) : null
+    return <SessionView model={model} catalog={sampleCatalog()} actions={actions} nowOverride={nowMs} initialMenu={menu} />
+  }
+  if (tela === 'resumo') {
+    const cat = sampleCatalog()
+    return <SessionSummaryView title="Treino B" summary={sampleSessionSummary()} exerciseName={(id) => cat.find((e) => e.id === id)?.name ?? ''} onDone={noop} />
+  }
+  if (tela === 'hoje-andamento') {
+    const model = buildTodayModel(sampleTodayData(), '2026-10-20', now)
+    return wrap(<TodayView model={model} active={{ title: 'Treino B', startedAt: new Date(Date.now() - 12 * 60_000).toISOString() }} onStart={noop} onResume={noop} onSkip={noop} onMove={noop} />, '/')
+  }
   if (tela === 'login') return <Login />
   if (tela === 'login-codigo') return <Login initialStep="code" initialEmail="ingridsabino000@gmail.com" initialCode="4821" />
   if (tela === 'treinar') {

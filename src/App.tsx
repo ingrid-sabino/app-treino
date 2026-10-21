@@ -9,6 +9,8 @@ import Today from './screens/Today'
 import Train from './screens/Train'
 import TemplateEditor from './screens/TemplateEditor'
 import RotationEditor from './screens/RotationEditor'
+import Session from './screens/Session'
+import SessionSummary from './screens/SessionSummary'
 
 // Prévias visuais com dados de exemplo; o import dinâmico some do build de produção
 // Evolução carrega à parte (gráficos) para não pesar na abertura do app
@@ -35,6 +37,8 @@ export default function App() {
         <Route path="/treinar" element={<Train />} />
         <Route path="/treinar/template/:id" element={<TemplateEditor />} />
         <Route path="/treinar/rotacao/:id" element={<RotationEditor />} />
+        <Route path="/sessao/:id" element={<Session />} />
+        <Route path="/sessao/:id/resumo" element={<SessionSummary />} />
         <Route
           path="/evolucao"
           element={
@@ -54,5 +58,5 @@ export default function App() {
 // Editores ocupam a tela inteira; nas abas principais a barra fica fixa no rodapé
 function MainTabBar() {
   const { pathname } = useLocation()
-  return pathname.startsWith('/treinar/') ? null : <TabBar />
+  return pathname.startsWith('/treinar/') || pathname.startsWith('/sessao/') ? null : <TabBar />
 }

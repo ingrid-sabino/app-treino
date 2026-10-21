@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router'
 import { db } from '../lib/db'
 import { useAuth } from '../lib/auth'
 import { moveOccurrence, skipOccurrence } from '../lib/rotationActions'
-import { addDays, startOfWeek, toLocalDate } from '../lib/schedule'
+import { addDays, nextWorkout, startOfWeek, toLocalDate } from '../lib/schedule'
+import { activeSession, startSession } from '../lib/session'
 import { buildTodayModel, type TodayData } from '../lib/today'
 import TodayView from './TodayView'
 
@@ -37,6 +38,12 @@ export default function Today() {
   const { session } = useAuth()
   const today = toLocalDate(new Date())
   const data = useLiveQuery(() => loadTodayData(today), [today])
+  const active = useLiveQuery(async () => {
+    const s = await activeSession()
+    if (!s) return null
+    const t = s.template_id ? await db.templates.get(s.template_id) : undefined
+    return { id: s.id, title: t?.name ?? 'Treino livre', startedAt: s.started_at }
+  }, [])
   if (!data) return null
 
   const model = buildTodayModel(data, today)
@@ -46,9 +53,27 @@ export default function Today() {
       ? { ownerId: session.user.id, rotationId: data.rotation.id, occurrences: data.occurrences }
       : null
 
+  // Começar o Próximo treino (musculação; cardio e yoga manuais entram no Dia 6)
+  const items = data.items.filter((i) => !i.deleted_at).sort((a, b) => a.position - b.position)
+  const next = data.rotation
+    ? nextWorkout({ itemCount: items.length, weeklySlots: data.rotation.weekly_slots, occurrences: data.occurrences.filter((o) => !o.deleted_at), today })
+    : null
+  const nextItem = next ? items[next.itemIndex] : null
+  const start =
+    nextItem && session && nextItem.modality === 'strength'
+      ? async () => {
+          if (active) return navigate(`/sessao/${active.id}`)
+          const id = await startSession({ ownerId: session.user.id, templateId: nextItem.template_id, rotationItemId: nextItem.id, modality: nextItem.modality })
+          navigate(`/sessao/${id}`)
+        }
+      : undefined
+
   return (
     <TodayView
       model={model}
+      active={active ?? null}
+      onStart={start}
+      onResume={active ? () => navigate(`/sessao/${active.id}`) : undefined}
       onSkip={target ? (seq) => skipOccurrence(target, seq, today) : undefined}
       onMove={target ? (seq, date) => moveOccurrence(target, seq, date) : undefined}
       onImport={() => navigate('/treinar')}

@@ -208,3 +208,51 @@ export function sampleTodayTwoToday(): TodayData {
     ],
   }
 }
+
+// Sessão em andamento do Treino B (prévia): 32 min, remada curvada com 3 de 4 Séries feitas
+export function sampleSessionData(nowMs: number): import('./session').SessionData {
+  const cat = sampleCatalog()
+  const ex = (name: string) => cat.find((e) => e.name === name)!
+  const iso = (msAgo: number) => new Date(nowMs - msAgo).toISOString()
+  const plan: [string, number, number, number][] = [
+    // nome, Séries, peso, reps
+    ['Remada curvada', 4, 50, 10],
+    ['Barra fixa', 4, 0, 8],
+    ['Puxada frontal', 3, 45, 12],
+    ['Rosca direta', 3, 25, 12],
+  ]
+  const sets: import('./db').WorkoutSet[] = []
+  const previous: Record<string, import('./db').WorkoutSet[]> = {}
+  plan.forEach(([name, count, kg, reps], position) => {
+    const e = ex(name)
+    previous[e.id] = []
+    for (let i = 0; i < count; i++) {
+      const done = position === 0 && i < 3
+      const weight = name === 'Barra fixa' ? null : kg
+      sets.push({ ...base, id: `s-${position}-${i}`, session_id: 'ses', exercise_id: e.id, exercise_position: position, set_position: i, weight_kg: weight, reps, rpe: null, status: done ? 'done' : 'pending', completed_at: done ? iso((3 - i) * 150_000 - 110_000) : null })
+      previous[e.id].push({ ...sets[sets.length - 1], id: `p-${position}-${i}`, weight_kg: weight == null ? null : weight - 2.5, reps: reps - (i === count - 1 ? 2 : 0), status: 'done' })
+    }
+  })
+  return {
+    session: { ...base, id: 'ses', owner_id: owner, rotation_item_id: 'item-1', template_id: 'tpl-Treino B', modality: 'strength', started_at: iso(32 * 60_000 + 14_000), ended_at: null, effort: null, notes: null },
+    templateName: 'Treino B',
+    sets,
+    exercises: cat,
+    templateRest: { [ex('Remada curvada').id]: 120, [ex('Barra fixa').id]: 120, [ex('Puxada frontal').id]: 90, [ex('Rosca direta').id]: 60 },
+    previous,
+  }
+}
+
+export function sampleSessionSummary(): import('./session').SessionSummary {
+  const cat = sampleCatalog()
+  return {
+    durationSeconds: 58 * 60 + 12,
+    volumeKg: 7240,
+    reps: 142,
+    setsDone: 14,
+    records: [
+      { exerciseId: cat.find((e) => e.name === 'Remada curvada')!.id, kind: 'weight', value: 52.5, previous: 50 },
+      { exerciseId: cat.find((e) => e.name === 'Remada curvada')!.id, kind: 'oneRepMax', value: 70, previous: 66.7 },
+    ],
+  }
+}

@@ -1,8 +1,9 @@
-import { useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import Sheet from '../components/Sheet'
 import { Button, Card, Label, ModalityTag, SectionHeader, Stat, modalityStyle } from '../components/ui'
 import type { Modality } from '../lib/db'
 import { addDays, weekdayIndex } from '../lib/schedule'
+import { elapsedSeconds, formatClock } from '../lib/session'
 
 // Tela Hoje, só apresentação (os dados vêm de buildTodayModel em lib/today.ts).
 
@@ -39,6 +40,11 @@ export interface UpcomingModel {
   dateLabel: string
 }
 
+export interface ActiveSessionModel {
+  title: string
+  startedAt: string
+}
+
 export interface TodayModel {
   today: string
   dateLabel: string
@@ -53,6 +59,7 @@ export interface TodayModel {
 
 interface Actions {
   onStart?: () => void
+  onResume?: () => void
   onSkip?: (seq: number) => void // FR-2
   onMove?: (seq: number, date: string) => void // FR-35
   onImport?: () => void
@@ -261,7 +268,7 @@ function DayPicker({ today, current, onPick }: { today: string; current: string 
 
 type SheetState = { kind: 'day'; day: WeekDayModel } | { kind: 'move'; seq: number; label: string; from: string | null } | null
 
-function NextWorkoutCard({ next, onStart, onSkip, onMoveClick }: { next: NextWorkoutModel; onStart?: () => void; onSkip?: () => void; onMoveClick?: () => void }) {
+function NextWorkoutCard({ next, startLabel = 'Começar', onStart, onSkip, onMoveClick }: { next: NextWorkoutModel; startLabel?: string; onStart?: () => void; onSkip?: () => void; onMoveClick?: () => void }) {
   const stats = [
     next.exerciseCount != null && { label: 'Exercícios', value: String(next.exerciseCount) },
     next.setCount != null && { label: 'Séries', value: String(next.setCount) },
@@ -284,7 +291,7 @@ function NextWorkoutCard({ next, onStart, onSkip, onMoveClick }: { next: NextWor
         </div>
       )}
       <Button className="mt-5" onClick={onStart} disabled={!onStart}>
-        Começar
+        {startLabel}
       </Button>
       <div className="mt-2 grid grid-cols-2 gap-2">
         <Button variant="dark" size="md" className="border border-white/20" onClick={onSkip} disabled={!onSkip}>
@@ -316,11 +323,32 @@ function EmptyRotation({ onImport, onCreateTemplate }: Actions) {
   )
 }
 
+function ActiveSessionCard({ active, onResume }: { active: ActiveSessionModel; onResume?: () => void }) {
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(id)
+  }, [])
+  return (
+    <Card tone="lime" className="flex items-center gap-3 p-4">
+      <div className="min-w-0 flex-1">
+        <Label className="opacity-70">Sessão em andamento</Label>
+        <p className="truncate font-display text-3xl font-extrabold uppercase leading-none">{active.title}</p>
+        <p className="mt-1 font-display text-xl font-bold tabular-nums">{formatClock(elapsedSeconds(active.startedAt, now))}</p>
+      </div>
+      <Button variant="dark" size="md" className="!w-auto px-5" onClick={onResume}>
+        Continuar
+      </Button>
+    </Card>
+  )
+}
+
 export default function TodayView({
   model,
   initialSheet = null,
+  active = null,
   ...actions
-}: { model: TodayModel; initialSheet?: SheetState } & Actions) {
+}: { model: TodayModel; initialSheet?: SheetState; active?: ActiveSessionModel | null } & Actions) {
   const [sheet, setSheet] = useState<SheetState>(initialSheet)
   const { next } = model
   const nextDate = model.week.find((d) => d.items.some((i) => i.seq === next?.seq))?.date ?? null
@@ -331,6 +359,8 @@ export default function TodayView({
         <Label className="text-muted first-letter:uppercase">{model.dateLabel}</Label>
         <h1 className="mt-1 text-6xl">Hoje</h1>
       </header>
+
+      {active && <ActiveSessionCard active={active} onResume={actions.onResume} />}
 
       <WeekStrip
         week={model.week}
@@ -344,7 +374,8 @@ export default function TodayView({
       {next ? (
         <NextWorkoutCard
           next={next}
-          onStart={actions.onStart}
+          startLabel={active ? 'Continuar' : 'Começar'}
+          onStart={active ? actions.onResume : actions.onStart}
           onSkip={actions.onSkip && (() => actions.onSkip!(next.seq))}
           onMoveClick={actions.onMove && (() => setSheet({ kind: 'move', seq: next.seq, label: next.label, from: nextDate }))}
         />
