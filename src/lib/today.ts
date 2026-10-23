@@ -37,6 +37,7 @@ export function buildTodayModel(data: TodayData, today: string, now = new Date()
     weeklySlots: data.rotation?.weekly_slots ?? [0, 0, 0, 0, 0, 0, 0],
     occurrences,
     today,
+    startsOn: data.rotation?.starts_on,
   }
 
   const plan = data.rotation ? planSchedule({ ...scheduleInput, until: addDays(today, 13) }) : []

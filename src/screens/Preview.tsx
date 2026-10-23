@@ -23,6 +23,9 @@ import { PICTOGRAMS } from '../lib/pictograms'
 import { MORE_PICTOGRAMS } from '../lib/pictogramsMore'
 import { EXERCISE_INFO, highlightFor } from '../lib/exerciseInfo'
 import TodayView from './TodayView'
+import { ImportStartView, ProgramPreviewView, type PromptForm } from './ImportProgramView'
+import { ProgramSchema, type Resolution } from '../lib/program'
+import { PRESET_PROGRAMS } from '../lib/programPrompts'
 
 // Prévias visuais com dados de exemplo (só em desenvolvimento): /design?tela=...
 const noop = () => {}
@@ -52,6 +55,8 @@ export default function Preview() {
         ))}
       </main>
     )
+  if (tela === 'importar' || tela === 'importar-erro') return <ImportPreview withError={tela === 'importar-erro'} />
+  if (tela === 'programa' || tela === 'programa-criar' || tela === 'programa-pronto') return <ProgramPreview tela={tela} />
   if (tela === 'pictogramas-novos')
     return (
       <main className="grid grid-cols-2 gap-x-3 gap-y-4 p-3">
@@ -186,6 +191,80 @@ function RotationPreview({ adding }: { adding: boolean }) {
       onCancel={noop}
       onCreateTemplate={noop}
       initialAddOpen={adding}
+    />
+  )
+}
+
+function ImportPreview({ withError }: { withError: boolean }) {
+  const [form, setForm] = useState<PromptForm>({ goal: 'hypertrophy', level: 'beginner', daysPerWeek: 3, minutes: 60, context: '' })
+  return (
+    <ImportStartView
+      form={form}
+      onForm={setForm}
+      copied={false}
+      onCopyPrompt={noop}
+      text={withError ? '```json\n{ "name": "Meu treino", "workouts": [ { "name": "Treino A", "exercises": [] } ] }\n```' : ''}
+      onText={noop}
+      onFile={noop}
+      onPreview={noop}
+      errors={withError ? ['dias por semana: campo obrigatório faltando', 'treinos › Treino A › Exercícios: treino de musculação sem Exercícios'] : []}
+      presets={PRESET_PROGRAMS}
+      onPickPreset={noop}
+      onBack={noop}
+    />
+  )
+}
+
+// Programa como viria de uma IA: nomes diferentes do catálogo e um Exercício que não existe
+const AI_PROGRAM = ProgramSchema.parse({
+  format: 'tonus-programa',
+  version: 1,
+  name: 'Hipertrofia iniciante 3×',
+  goal: 'hypertrophy',
+  level: 'beginner',
+  weeks: 8,
+  days_per_week: 3,
+  notes: 'Suba a carga quando fizer todas as Séries no topo da faixa.',
+  workouts: [
+    { name: 'Treino A', focus: 'Peito, ombros e tríceps', exercises: [
+      { name: 'Supino reto com barra', sets: 3, reps: '8-12', rest_seconds: 90 },
+      { name: 'Desenvolvimento com halteres', sets: 3, reps: '10-12', rest_seconds: 90 },
+      { name: 'Elevação lateral', sets: 3, reps: '12-15', rest_seconds: 60 },
+      { name: 'Tríceps pulley', sets: 3, reps: '10-12', rest_seconds: 60 },
+    ] },
+    { name: 'Treino B', focus: 'Costas e bíceps', exercises: [
+      { name: 'Puxada alta', sets: 3, reps: '8-12', rest_seconds: 90 },
+      { name: 'Remada máquina articulada', sets: 3, reps: '10-12', rest_seconds: 90 },
+      { name: 'Rosca direta', sets: 3, reps: '10-12', rest_seconds: 60 },
+    ] },
+    { name: 'Treino C', focus: 'Pernas', exercises: [
+      { name: 'Agachamento', sets: 3, reps: '8-10', rest_seconds: 120 },
+      { name: 'Leg press', sets: 3, reps: '10-12', rest_seconds: 90 },
+      { name: 'Cadeira extensora unilateral', sets: 2, reps: '12-15', rest_seconds: 60 },
+      { name: 'Panturrilha em pé', sets: 3, reps: '12-15', rest_seconds: 60 },
+    ] },
+    { name: 'Caminhada', modality: 'run', notes: '30 min em ritmo moderado.' },
+  ],
+})
+
+function ProgramPreview({ tela }: { tela: string }) {
+  const program = tela === 'programa-pronto' ? ProgramSchema.parse(PRESET_PROGRAMS[1]) : AI_PROGRAM
+  const [resolutions, setResolutions] = useState<Record<string, Resolution>>({})
+  const [slots, setSlots] = useState([1, 0, 1, 0, 1, 0, 0])
+  return (
+    <ProgramPreviewView
+      program={program}
+      catalog={sampleCatalog()}
+      resolutions={resolutions}
+      onResolve={(k, r) => setResolutions((p) => { const n = { ...p }; if (r) n[k] = r; else delete n[k]; return n })}
+      startsOn="2026-10-26"
+      onStartsOn={noop}
+      slots={slots}
+      onSlots={setSlots}
+      activeName="Força + corrida"
+      onImport={noop}
+      onBack={noop}
+      initialResolve={tela === 'programa-criar' ? { key: 'remada maquina articulada', name: 'Remada máquina articulada', mode: 'create' } : undefined}
     />
   )
 }

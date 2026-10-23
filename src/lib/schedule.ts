@@ -34,6 +34,7 @@ export interface ScheduleInput {
   occurrences: OccurrenceState[]
   today: string // AAAA-MM-DD, no fuso da pessoa
   until: string // último dia da Agenda (inclusive)
+  startsOn?: string // Rotação que começa no futuro (FR-13): nada é planejado antes desta data
 }
 
 // Datas como AAAA-MM-DD, calculadas em UTC para não sofrer com fuso e horário de verão
@@ -86,7 +87,8 @@ export function planSchedule(input: ScheduleInput): PlannedWorkout[] {
     return seq++
   }
 
-  for (let date = today; date <= until; date = addDays(date, 1)) {
+  const from = input.startsOn && input.startsOn > today ? input.startsOn : today
+  for (let date = from; date <= until; date = addDays(date, 1)) {
     let slots = weeklySlots[weekdayIndex(date)] ?? 0
     if (date === today) slots = Math.max(0, slots - doneToday)
     for (let i = 0; i < slots; i++) {

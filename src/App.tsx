@@ -9,6 +9,7 @@ import Today from './screens/Today'
 import Train from './screens/Train'
 import TemplateEditor from './screens/TemplateEditor'
 import RotationEditor from './screens/RotationEditor'
+import ImportProgram from './screens/ImportProgram'
 import Session from './screens/Session'
 import SessionSummary from './screens/SessionSummary'
 
@@ -37,6 +38,7 @@ export default function App() {
         <Route path="/treinar" element={<Train />} />
         <Route path="/treinar/template/:id" element={<TemplateEditor />} />
         <Route path="/treinar/rotacao/:id" element={<RotationEditor />} />
+        <Route path="/treinar/importar" element={<ImportProgram />} />
         <Route path="/sessao/:id" element={<Session />} />
         <Route path="/sessao/:id/resumo" element={<SessionSummary />} />
         <Route

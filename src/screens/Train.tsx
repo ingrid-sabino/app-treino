@@ -42,6 +42,7 @@ export default function Train() {
       onCreateTemplate={() => navigate('/treinar/template/novo')}
       onOpenTemplate={(id) => navigate(`/treinar/template/${id}`)}
       onNewRotation={() => navigate('/treinar/rotacao/nova')}
+      onImport={() => navigate('/treinar/importar')}
       onEditRotation={(id) => navigate(`/treinar/rotacao/${id}`)}
       onSlotsChange={rotation ? (weekly_slots) => saveLocal('rotations', { ...rotation, weekly_slots }) : undefined}
     />

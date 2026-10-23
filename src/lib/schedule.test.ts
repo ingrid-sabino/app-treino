@@ -26,6 +26,12 @@ describe('Agenda da Rotação', () => {
     expect(week()).toEqual(['19 A', '20 B', '22 C', '23 D'])
   })
 
+  it('FR-13: Rotação que começa no futuro só entra na Agenda a partir da data escolhida', () => {
+    const plan = planSchedule({ itemCount: ITEMS.length, weeklySlots: SLOTS, occurrences: [], today: MON, until: SUN, startsOn: '2026-10-22' })
+    expect(plan.map((p) => `${p.date.slice(8)} ${ITEMS[p.itemIndex]}`)).toEqual(['22 A', '23 B'])
+    expect(nextWorkout({ itemCount: ITEMS.length, weeklySlots: SLOTS, occurrences: [], today: MON, startsOn: '2026-10-22' })?.date).toBe('2026-10-22')
+  })
+
   it('respeita mais de um treino no mesmo dia', () => {
     expect(week([], MON, SUN, [1, 0, 0, 0, 0, 2, 0])).toEqual(['19 A', '24 B', '24 C'])
   })

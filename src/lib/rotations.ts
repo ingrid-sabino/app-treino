@@ -1,4 +1,4 @@
-import { db, saveLocal, type Modality } from './db'
+import { db, saveLocal, type Modality, type Rotation } from './db'
 import { toLocalDate } from './schedule'
 
 // Montagem da Rotação: rascunho em memória e gravação no Dexie (FR-4, FR-13, FR-34).
@@ -47,8 +47,13 @@ export function moveItem(draft: RotationDraft, index: number, delta: -1 | 1): Ro
   return { ...draft, items }
 }
 
-// Salva; com `activate`, esta vira a Rotação ativa a partir de hoje e a anterior é arquivada (FR-13)
-export async function saveRotation(draft: RotationDraft, ownerId: string, activate: boolean): Promise<void> {
+// Salva; com `activate`, esta vira a Rotação ativa a partir de hoje (ou de `startsOn`) e a anterior é arquivada (FR-13)
+export async function saveRotation(
+  draft: RotationDraft,
+  ownerId: string,
+  activate: boolean,
+  opts: { startsOn?: string; source?: Rotation['source']; programMeta?: unknown } = {},
+): Promise<void> {
   const now = new Date().toISOString()
   const today = toLocalDate(new Date())
   if (activate) {
@@ -62,9 +67,9 @@ export async function saveRotation(draft: RotationDraft, ownerId: string, activa
     id: draft.id,
     owner_id: ownerId,
     name: draft.name.trim() || 'Rotação sem nome',
-    source: existing?.source ?? 'manual',
-    program_meta: existing?.program_meta ?? null,
-    starts_on: activate && !existing?.is_active ? today : (existing?.starts_on ?? today),
+    source: opts.source ?? existing?.source ?? 'manual',
+    program_meta: opts.programMeta ?? existing?.program_meta ?? null,
+    starts_on: opts.startsOn ?? (activate && !existing?.is_active ? today : (existing?.starts_on ?? today)),
     is_active: becomesActive,
     archived_at: becomesActive ? null : (existing?.archived_at ?? null),
     weekly_slots: draft.weeklySlots,
