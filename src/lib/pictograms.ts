@@ -1,4 +1,5 @@
 import type { P, PictogramDef, Pose } from '../components/Pictogram'
+import { MORE_PICTOGRAMS } from './pictogramsMore'
 
 // Poses (início e fim) dos Exercícios do catálogo. Quadro 100 × 74, chão em y = 60.
 // Figura em pé de referência: cabeça 14, ombro 22, quadril 39, joelho 50, pé 60.
@@ -22,7 +23,7 @@ const flatBench = (x: number, y: number, w: number): [P, P][] => [
   [[x + w - 4, y], [x + w - 4, 60]],
 ]
 
-export const PICTOGRAMS: Record<string, PictogramDef> = {
+const BASE_PICTOGRAMS: Record<string, PictogramDef> = {
   'Supino reto': {
     start: { head: [22, 39], shoulder: [30, 42], hip: [56, 42], elbow: [31, 31], hand: [31, 20], knee: [70, 36], foot: [72, 59], plates: [[31, 19]], lines: flatBench(18, 46, 44) },
     end: { head: [22, 39], shoulder: [30, 42], hip: [56, 42], elbow: [37, 50], hand: [33, 34], knee: [70, 36], foot: [72, 59], plates: [[33, 33]], lines: flatBench(18, 46, 44) },
@@ -168,6 +169,9 @@ export const PICTOGRAMS: Record<string, PictogramDef> = {
     end: { head: [24, 41], shoulder: [30, 45], hip: [55, 49], elbow: [30, 57], hand: [40, 58], knee: [68, 53], foot: [82, 58] },
   },
 }
+
+// Catálogo inicial (0001) + ampliado (0004)
+export const PICTOGRAMS: Record<string, PictogramDef> = { ...BASE_PICTOGRAMS, ...MORE_PICTOGRAMS }
 
 export function pictogramFor(name: string): PictogramDef | null {
   return PICTOGRAMS[name] ?? null

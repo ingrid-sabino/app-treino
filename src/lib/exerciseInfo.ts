@@ -1,5 +1,6 @@
 import type { Muscle } from 'react-body-highlighter'
 import type { Highlight, Segment } from '../components/Pictogram'
+import { MORE_EXERCISE_INFO } from './exerciseInfoMore'
 
 // Ficha dos Exercícios do catálogo: músculos (principal e secundários) e "Como fazer".
 // Músculos conferidos com o Free Exercise DB (domínio público); passos escritos em português.
@@ -30,7 +31,7 @@ export const MUSCLE_NAMES: Partial<Record<Muscle, string>> = {
   calves: 'Panturrilha',
 }
 
-export const EXERCISE_INFO: Record<string, ExerciseInfo> = {
+const BASE_EXERCISE_INFO: Record<string, ExerciseInfo> = {
   'Supino reto': {
     primary: ['chest'],
     secondary: ['triceps', 'front-deltoids'],
@@ -237,6 +238,9 @@ export function exerciseInfo(name: string): ExerciseInfo | null {
 
 
 // Em que parte da figura cada músculo acende
+// Catálogo inicial (0001) + ampliado (0004)
+export const EXERCISE_INFO: Record<string, ExerciseInfo> = { ...BASE_EXERCISE_INFO, ...MORE_EXERCISE_INFO }
+
 const SEGMENT_OF: Partial<Record<Muscle, Segment>> = {
   chest: 'torso',
   'upper-back': 'torso',

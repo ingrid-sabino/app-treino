@@ -20,6 +20,7 @@ import Login from './Login'
 import { MuscleMap } from '../components/MuscleMap'
 import { PictogramView } from '../components/Pictogram'
 import { PICTOGRAMS } from '../lib/pictograms'
+import { MORE_PICTOGRAMS } from '../lib/pictogramsMore'
 import { EXERCISE_INFO, highlightFor } from '../lib/exerciseInfo'
 import TodayView from './TodayView'
 
@@ -49,6 +50,21 @@ export default function Preview() {
             <PictogramView def={def} frame={1} className="w-full rounded-md" />
           </section>
         ))}
+      </main>
+    )
+  if (tela === 'pictogramas-novos')
+    return (
+      <main className="grid grid-cols-2 gap-x-3 gap-y-4 p-3">
+        {Object.entries(MORE_PICTOGRAMS).map(([name, def]) => {
+          const info = EXERCISE_INFO[name]
+          return (
+            <section key={name} className="grid grid-cols-2 gap-1">
+              <h2 className="col-span-2 truncate text-base">{name}</h2>
+              <PictogramView def={def} frame={0} highlight={info && highlightFor(info)} className="w-full rounded-md" />
+              <PictogramView def={def} frame={1} highlight={info && highlightFor(info)} className="w-full rounded-md" />
+            </section>
+          )
+        })}
       </main>
     )
   if (tela === 'pictograma-animado')

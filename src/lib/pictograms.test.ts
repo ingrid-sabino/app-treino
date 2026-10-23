@@ -2,6 +2,8 @@ import { EXERCISE_INFO, MUSCLE_NAMES, highlightFor } from './exerciseInfo'
 import { describe, expect, it } from 'vitest'
 import { PICTOGRAMS } from './pictograms'
 import { sampleCatalog } from './sample'
+import init from '../../supabase/migrations/0001_init.sql?raw'
+import extra from '../../supabase/migrations/0004_catalogo_ampliado.sql?raw'
 
 describe('pictogramas', () => {
   it('todo Exercício do catálogo inicial tem pictograma', () => {
@@ -37,5 +39,19 @@ describe('ficha do Exercício', () => {
       for (const m of [...info.primary, ...info.secondary]) expect(MUSCLE_NAMES[m], `${name}: ${m}`).toBeDefined()
       expect(Object.values(highlightFor(info)), name).toContain('primary')
     }
+  })
+})
+
+describe('catálogo global', () => {
+  it('o catálogo das prévias e testes é o mesmo das migrations', () => {
+    const sql = [init, extra].join('\n')
+    const seeded = [...sql.matchAll(/^\s+\('([^']+)', '([^']+)', '([^']+)'/gm)].map((m) => `${m[1]}|${m[2]}|${m[3]}`)
+    const sample = sampleCatalog().map((e) => `${e.name}|${e.muscle_group}|${e.equipment}`)
+    expect(seeded.sort()).toEqual(sample.sort())
+  })
+
+  it('não repete nome', () => {
+    const names = sampleCatalog().map((e) => e.name)
+    expect(new Set(names).size).toBe(names.length)
   })
 })

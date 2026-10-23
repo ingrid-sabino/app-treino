@@ -132,8 +132,8 @@ export function sampleProgressData(): import('./progress').ProgressData {
   }
 }
 
-// Catálogo inicial (o mesmo da migration 0001) para prévias e testes
-const CATALOG: [string, string, string][] = [
+// Catálogo global (o mesmo das migrations 0001 e 0004) para prévias e testes
+export const CATALOG: [string, string, string, number?][] = [
   ['Supino reto', 'peito', 'barra'],
   ['Supino inclinado com halteres', 'peito', 'halteres'],
   ['Crucifixo na máquina', 'peito', 'máquina'],
@@ -156,17 +156,67 @@ const CATALOG: [string, string, string][] = [
   ['Elevação pélvica', 'glúteos', 'barra'],
   ['Panturrilha em pé', 'panturrilhas', 'máquina'],
   ['Prancha', 'core', 'peso corporal'],
+  // 0004: catálogo ampliado
+  ['Supino inclinado com barra', 'peito', 'barra', 120],
+  ['Supino declinado', 'peito', 'barra', 120],
+  ['Supino reto com halteres', 'peito', 'halteres', 90],
+  ['Crucifixo com halteres', 'peito', 'halteres', 60],
+  ['Crossover', 'peito', 'polia', 60],
+  ['Flexão de braço', 'peito', 'peso corporal', 90],
+  ['Desenvolvimento com halteres', 'ombros', 'halteres', 90],
+  ['Elevação frontal', 'ombros', 'halteres', 60],
+  ['Crucifixo invertido', 'ombros', 'halteres', 60],
+  ['Remada alta', 'ombros', 'barra', 90],
+  ['Encolhimento', 'ombros', 'halteres', 60],
+  ['Face pull', 'ombros', 'polia', 60],
+  ['Remada unilateral com halter', 'costas', 'halter', 90],
+  ['Pulldown com braços estendidos', 'costas', 'polia', 90],
+  ['Remada cavalinho', 'costas', 'barra', 120],
+  ['Hiperextensão lombar', 'costas', 'banco', 90],
+  ['Rosca alternada', 'bíceps', 'halteres', 60],
+  ['Rosca Scott', 'bíceps', 'barra', 60],
+  ['Rosca na polia', 'bíceps', 'polia', 60],
+  ['Rosca concentrada', 'bíceps', 'halter', 60],
+  ['Tríceps testa', 'tríceps', 'barra', 60],
+  ['Tríceps corda', 'tríceps', 'polia', 60],
+  ['Mergulho no banco', 'tríceps', 'peso corporal', 90],
+  ['Mergulho nas paralelas', 'tríceps', 'peso corporal', 120],
+  ['Tríceps coice', 'tríceps', 'halter', 60],
+  ['Supino fechado', 'tríceps', 'barra', 120],
+  ['Agachamento sumô', 'pernas', 'halter', 90],
+  ['Agachamento búlgaro', 'pernas', 'halteres', 120],
+  ['Afundo', 'pernas', 'halteres', 90],
+  ['Agachamento hack', 'pernas', 'máquina', 120],
+  ['Agachamento goblet', 'pernas', 'halter', 90],
+  ['Agachamento no Smith', 'pernas', 'máquina', 120],
+  ['Cadeira adutora', 'pernas', 'máquina', 60],
+  ['Cadeira abdutora', 'glúteos', 'máquina', 60],
+  ['Subida no banco', 'pernas', 'halteres', 90],
+  ['Cadeira flexora', 'posterior', 'máquina', 90],
+  ['Bom dia', 'posterior', 'barra', 120],
+  ['Glúteo na polia', 'glúteos', 'polia', 60],
+  ['Ponte de glúteo', 'glúteos', 'peso corporal', 90],
+  ['Panturrilha sentada', 'panturrilhas', 'máquina', 60],
+  ['Panturrilha no leg press', 'panturrilhas', 'máquina', 60],
+  ['Abdominal supra', 'core', 'peso corporal', 60],
+  ['Abdominal infra', 'core', 'peso corporal', 60],
+  ['Elevação de pernas na barra', 'core', 'peso corporal', 60],
+  ['Prancha lateral', 'core', 'peso corporal', 60],
+  ['Abdominal oblíquo', 'core', 'halter', 60],
+  ['Abdominal na polia', 'core', 'polia', 60],
+  ['Roda abdominal', 'core', 'roda', 60],
+  ['Escalador', 'core', 'peso corporal', 60],
 ]
 
 export function sampleCatalog(): import('./db').Exercise[] {
-  return CATALOG.map(([name, muscle_group, equipment], i) => ({
+  return CATALOG.map(([name, muscle_group, equipment, rest], i) => ({
     ...base,
     id: `cat-${i}`,
     owner_id: null,
     name,
     muscle_group,
     equipment,
-    default_rest_seconds: 90,
+    default_rest_seconds: rest ?? 90,
   }))
 }
 
