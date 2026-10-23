@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { ExerciseSheetContent, ExerciseThumb } from '../components/ExerciseMedia'
 import Sheet from '../components/Sheet'
 import { Button, Card, Input, Label, SectionHeader, TextButton, modalityStyle } from '../components/ui'
@@ -156,7 +156,10 @@ export function ExercisePicker({ catalog, onPick, onCreate, onInfo }: {
             </div>
           </li>
         ))}
-        {list.length === 0 && !query.trim() && <li className="py-6 text-center text-sm text-muted">O catálogo ainda está sincronizando.</li>}
+        {catalog.length === 0 && !query.trim() && <li className="py-6 text-center text-sm text-muted">O catálogo ainda está sincronizando.</li>}
+        {onCreate && !query.trim() && (
+          <li className="py-4 text-center text-sm text-muted">Não achou? Digite o nome na busca para criar o Exercício.</li>
+        )}
       </ul>
     </div>
   )
@@ -167,6 +170,7 @@ export default function TemplateEditorView({
   catalog,
   onChange,
   onSave,
+  saveError,
   onCancel,
   onArchive,
   onCreateExercise,
@@ -177,6 +181,7 @@ export default function TemplateEditorView({
   catalog: Exercise[]
   onChange: (d: TemplateDraft) => void
   onSave?: () => void
+  saveError?: string | null
   onCancel?: () => void
   onArchive?: () => void
   onCreateExercise?: (name: string, muscleGroup: string) => Promise<Exercise>
@@ -185,7 +190,18 @@ export default function TemplateEditorView({
 }) {
   const [picker, setPicker] = useState(initialPickerOpen)
   const [frames, setFrames] = useState<{ name: string } | null>(initialFramesIndex != null ? draft.exercises[initialFramesIndex] : null)
+  const [nameMissing, setNameMissing] = useState(false)
+  const nameRef = useRef<HTMLInputElement>(null)
   const isStrength = draft.modality === 'strength'
+  // Salvar fica sempre à mão; sem nome, aponta o campo em vez de não responder
+  const save = () => {
+    if (!draft.name.trim()) {
+      setNameMissing(true)
+      nameRef.current?.focus()
+      return
+    }
+    onSave?.()
+  }
 
   return (
     <main className="mx-auto max-w-lg px-4 pb-32">
@@ -195,19 +211,33 @@ export default function TemplateEditorView({
           ← Voltar
         </TextButton>
         <Label className="text-muted">{draft.isNew ? 'Novo Template' : 'Editar Template'}</Label>
-        <Button size="sm" className="!w-auto px-5" onClick={onSave} disabled={!onSave || !draft.name.trim()}>
+        <Button size="sm" className="!w-auto px-5" onClick={save} disabled={!onSave}>
           Salvar
         </Button>
       </div>
 
       <div className="space-y-4 pt-4">
-        <input
-          aria-label="Nome do Template"
-          placeholder="Nome do Template"
-          value={draft.name}
-          onChange={(e) => onChange({ ...draft, name: e.target.value })}
-          className="w-full bg-transparent font-display text-5xl font-extrabold uppercase leading-none outline-none placeholder:text-line"
-        />
+        {saveError && (
+          <p role="alert" className="rounded-md border border-danger px-3 py-2 text-sm text-danger">
+            {saveError}
+          </p>
+        )}
+        <div>
+          <Label className="mb-1 text-muted">Nome</Label>
+          <input
+            ref={nameRef}
+            aria-label="Nome do Template"
+            aria-invalid={nameMissing && !draft.name.trim()}
+            placeholder="Ex.: Treino A"
+            autoFocus={draft.isNew}
+            value={draft.name}
+            onChange={(e) => onChange({ ...draft, name: e.target.value })}
+            className={`w-full border-b-2 bg-transparent pb-1 font-display text-5xl font-extrabold uppercase leading-none outline-none placeholder:text-muted/40 focus:border-ink ${
+              nameMissing && !draft.name.trim() ? 'border-danger' : 'border-line'
+            }`}
+          />
+          {nameMissing && !draft.name.trim() && <p className="mt-1.5 text-sm font-semibold text-danger">Dê um nome ao Template para salvar.</p>}
+        </div>
         <Input placeholder="Foco (ex.: Costas e bíceps)" value={draft.notes} onChange={(e) => onChange({ ...draft, notes: e.target.value })} />
 
         <div>

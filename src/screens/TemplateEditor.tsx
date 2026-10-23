@@ -11,6 +11,7 @@ export default function TemplateEditor() {
   const navigate = useNavigate()
   const { session } = useAuth()
   const [draft, setDraft] = useState<TemplateDraft | null>(id === 'novo' ? emptyDraft() : null)
+  const [saveError, setSaveError] = useState<string | null>(null)
   // Catálogo global + Exercícios da pessoa
   const catalog = useLiveQuery(() => db.exercises.filter((e) => !e.deleted_at).toArray(), []) ?? []
 
@@ -28,9 +29,15 @@ export default function TemplateEditor() {
       catalog={catalog}
       onChange={setDraft}
       onCancel={back}
+      saveError={saveError}
       onSave={async () => {
-        await saveDraft(draft, ownerId)
-        back()
+        try {
+          await saveDraft(draft, ownerId)
+          back()
+        } catch (err) {
+          console.error(err)
+          setSaveError(`Não deu para salvar no aparelho: ${err instanceof Error ? err.message : String(err)}`)
+        }
       }}
       onArchive={
         draft.isNew
